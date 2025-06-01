@@ -1,9 +1,12 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
 import { KeywordManager } from '@/components/KeywordManager';
 import { DocumentViewer } from '@/components/DocumentViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { KeywordFilter } from '@/components/KeywordFilter';
+import { KeywordDensity } from '@/components/KeywordDensity';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
