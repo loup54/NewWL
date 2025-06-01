@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, X, Eye, EyeOff, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +29,13 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   const [newKeyword, setNewKeyword] = useState('');
   const [selectedColor, setSelectedColor] = useState(colors[0]);
 
+  console.log('KeywordManager render - newKeyword:', newKeyword);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Input change event:', e.target.value);
+    setNewKeyword(e.target.value);
+  };
+
   const handleAddKeyword = () => {
     if (!newKeyword.trim()) {
       toast.error('Please enter a keyword');
@@ -52,6 +58,13 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
     toast.success(`Removed keyword: ${word}`);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    console.log('Key down event:', e.key);
+    if (e.key === 'Enter') {
+      handleAddKeyword();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -70,9 +83,10 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
           <Input
             placeholder="Enter keyword..."
             value={newKeyword}
-            onChange={(e) => setNewKeyword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddKeyword()}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            autoComplete="off"
           />
           
           <div className="space-y-2">
