@@ -11,6 +11,65 @@ interface DocumentViewerProps {
   onKeywordCountsUpdate: (counts: Record<string, number>) => void;
 }
 
+const cleanRTFContent = (content: string): string => {
+  if (!content) return '';
+  
+  // Remove RTF control codes and formatting
+  let cleanedContent = content
+    // Remove RTF header and control words
+    .replace(/\\rtf\d+/g, '')
+    .replace(/\\ansi/g, '')
+    .replace(/\\ansicpg\d+/g, '')
+    .replace(/\\cocoartf\d+/g, '')
+    .replace(/\\deff\d+/g, '')
+    .replace(/\\deflang\d+/g, '')
+    .replace(/\\fonttbl[^}]*}/g, '')
+    .replace(/\\colortbl[^}]*}/g, '')
+    .replace(/\\stylesheet[^}]*}/g, '')
+    .replace(/\\info[^}]*}/g, '')
+    // Remove font formatting
+    .replace(/\\f\d+/g, '')
+    .replace(/\\fs\d+/g, '')
+    .replace(/\\cf\d+/g, '')
+    .replace(/\\cb\d+/g, '')
+    .replace(/\\highlight\d+/g, '')
+    // Remove paragraph formatting
+    .replace(/\\par\b/g, '\n')
+    .replace(/\\pard/g, '')
+    .replace(/\\pardeftab\d+/g, '')
+    .replace(/\\sl\d+/g, '')
+    .replace(/\\slmult\d+/g, '')
+    .replace(/\\sb\d+/g, '')
+    .replace(/\\sa\d+/g, '')
+    // Remove text formatting
+    .replace(/\\b\b/g, '')
+    .replace(/\\i\b/g, '')
+    .replace(/\\ul\b/g, '')
+    .replace(/\\ulnone/g, '')
+    .replace(/\\strike/g, '')
+    .replace(/\\striked\d+/g, '')
+    // Remove other common RTF codes
+    .replace(/\\tab/g, '\t')
+    .replace(/\\line/g, '\n')
+    .replace(/\\page/g, '\n\n')
+    .replace(/\\sect/g, '')
+    .replace(/\\sectd/g, '')
+    // Remove remaining control words (backslash followed by letters and optional number)
+    .replace(/\\[a-zA-Z]+\d*/g, '')
+    // Remove remaining control symbols
+    .replace(/\\[^a-zA-Z\s]/g, '')
+    // Clean up braces
+    .replace(/[{}]/g, '')
+    // Clean up multiple whitespaces and newlines
+    .replace(/\s+/g, ' ')
+    .replace(/\n\s+/g, '\n')
+    .replace(/\n+/g, '\n')
+    // Trim whitespace
+    .trim();
+
+  return cleanedContent;
+};
+
 export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   document,
   keywords,
@@ -26,7 +85,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       return;
     }
 
-    let content = document.content;
+    // Clean RTF formatting first
+    const cleanedContent = cleanRTFContent(document.content);
+    let content = cleanedContent;
     const counts: Record<string, number> = {};
 
     try {
@@ -36,7 +97,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
           if (!keyword?.word) return;
           
           try {
-            const regex = new RegExp(`\\b${keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+            const escapedKeyword = keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
             const matches = content.match(regex) || [];
             counts[keyword.word] = matches.length;
 
@@ -57,7 +119,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
           if (!keyword?.word) return;
           
           try {
-            const regex = new RegExp(`\\b${keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+            const escapedKeyword = keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
             const matches = content.match(regex) || [];
             counts[keyword.word] = matches.length;
           } catch (regexError) {
@@ -71,7 +134,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       onKeywordCountsUpdate(counts);
     } catch (error) {
       console.error('Error processing content:', error);
-      setHighlightedContent(document.content);
+      setHighlightedContent(cleanedContent);
       onKeywordCountsUpdate({});
     }
   }, [document?.content, keywords, highlightEnabled, onKeywordCountsUpdate]);
