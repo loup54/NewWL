@@ -19,8 +19,6 @@ import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
 import { PWAInstallBanner } from '@/components/PWAInstallBanner';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useOnboarding } from '@/hooks/useOnboarding';
-import { useOfflineDocuments } from '@/hooks/useOfflineDocuments';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,8 +43,6 @@ export interface Keyword {
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const { isFirstVisit, showTour, completeOnboarding, completeTour } = useOnboarding();
-  const { saveDocumentOffline } = useOfflineDocuments();
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<DocumentData | null>(null);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
@@ -56,6 +52,7 @@ const Index = () => {
   const [documentKeywordCounts, setDocumentKeywordCounts] = useState<Record<string, Record<string, number>>>({});
 
   const handleFileUpload = useCallback((files: File[]) => {
+    console.log('handleFileUpload called with files:', files);
     try {
       files.forEach(file => {
         const reader = new FileReader();
@@ -71,13 +68,11 @@ const Index = () => {
               fileType: file.type
             };
             
+            console.log('Created new document:', newDocument);
             setDocuments(prev => [...prev, newDocument]);
             if (!selectedDocument) {
               setSelectedDocument(newDocument);
             }
-
-            // Auto-save to offline storage
-            saveDocumentOffline(newDocument);
           } catch (error) {
             console.error('Error processing file:', error);
             toast.error('Error processing file');
@@ -89,23 +84,23 @@ const Index = () => {
       console.error('Error handling file upload:', error);
       toast.error('Error uploading file');
     }
-  }, [selectedDocument, saveDocumentOffline]);
+  }, [selectedDocument]);
 
   const handleDocumentUpload = useCallback((document: DocumentData) => {
+    console.log('handleDocumentUpload called with document:', document);
     try {
       setDocuments(prev => [...prev, document]);
       if (!selectedDocument) {
         setSelectedDocument(document);
       }
-      // Auto-save to offline storage
-      saveDocumentOffline(document);
     } catch (error) {
       console.error('Error handling document upload:', error);
       toast.error('Error uploading document');
     }
-  }, [selectedDocument, saveDocumentOffline]);
+  }, [selectedDocument]);
 
   const handleAddKeyword = useCallback((word: string, color: string) => {
+    console.log('handleAddKeyword called with:', word, color);
     try {
       const newKeyword: Keyword = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -121,6 +116,7 @@ const Index = () => {
   }, []);
 
   const handleRemoveKeyword = useCallback((id: string) => {
+    console.log('handleRemoveKeyword called with id:', id);
     try {
       setKeywords(prev => prev.filter(k => k.id !== id));
     } catch (error) {
@@ -130,6 +126,7 @@ const Index = () => {
   }, []);
 
   const handleKeywordCountsUpdate = useCallback((counts: Record<string, number>) => {
+    console.log('handleKeywordCountsUpdate called with counts:', counts);
     try {
       setKeywordCounts(counts);
       setKeywords(prev => prev.map(keyword => ({
@@ -148,67 +145,12 @@ const Index = () => {
     }
   }, [selectedDocument]);
 
-  // Keyboard shortcut handlers
-  const handleKeyboardAddKeyword = useCallback(() => {
-    toast.info('Add keyword shortcut triggered');
-  }, []);
-
-  const handleKeyboardUploadDocument = useCallback(() => {
-    try {
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = '.txt,.md,.html,.rtf,.json';
-      fileInput.onchange = (e) => {
-        const files = (e.target as HTMLInputElement).files;
-        if (files) {
-          handleFileUpload(Array.from(files));
-        }
-      };
-      fileInput.click();
-    } catch (error) {
-      console.error('Error with keyboard upload:', error);
-      toast.error('Error opening file dialog');
-    }
-  }, [handleFileUpload]);
-
-  const handleKeyboardExport = useCallback(() => {
-    try {
-      if (selectedDocument) {
-        const blob = new Blob([selectedDocument.content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `analyzed_${selectedDocument.filename}`;
-        link.click();
-        URL.revokeObjectURL(url);
-        toast.success('Document exported');
-      } else {
-        toast.error('No document selected for export');
-      }
-    } catch (error) {
-      console.error('Error exporting document:', error);
-      toast.error('Error exporting document');
-    }
-  }, [selectedDocument]);
-
-  const handleKeyboardToggleHighlight = useCallback(() => {
-    try {
-      setHighlightEnabled(prev => !prev);
-      toast.info(`Highlighting ${!highlightEnabled ? 'enabled' : 'disabled'}`);
-    } catch (error) {
-      console.error('Error toggling highlight:', error);
-    }
-  }, [highlightEnabled]);
-
-  // Show welcome tutorial for first-time users
-  if (isFirstVisit) {
-    return (
-      <WelcomeTutorial
-        onStartTour={completeOnboarding}
-        onSkip={completeOnboarding}
-      />
-    );
-  }
+  console.log('Rendering Index component with state:', {
+    documentsCount: documents.length,
+    selectedDocument: selectedDocument?.filename,
+    keywordsCount: keywords.length,
+    isMobile
+  });
 
   if (isMobile) {
     return (
@@ -264,22 +206,6 @@ const Index = () => {
       <Header />
       <OfflineIndicator />
       <PWAInstallBanner />
-      
-      {/* Onboarding Tour */}
-      {showTour && (
-        <OnboardingTour
-          isFirstVisit={false}
-          onComplete={completeTour}
-        />
-      )}
-
-      {/* Keyboard Shortcuts */}
-      <KeyboardShortcuts
-        onAddKeyword={handleKeyboardAddKeyword}
-        onUploadDocument={handleKeyboardUploadDocument}
-        onExport={handleKeyboardExport}
-        onToggleHighlight={handleKeyboardToggleHighlight}
-      />
 
       <div className="max-w-7xl mx-auto p-6">
         {documents.length === 0 ? (
