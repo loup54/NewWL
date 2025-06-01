@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileTemplate, Plus, Edit3, Trash2, Copy } from 'lucide-react';
+import { FileText, Plus, Edit3, Trash2, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ExportTemplate {
@@ -358,7 +358,7 @@ export const ExportTemplates: React.FC = () => {
             <CardContent className="py-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
-                  <FileTemplate className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <h3 className="font-medium">{template.name}</h3>
                     <p className="text-sm text-muted-foreground">{template.description}</p>
