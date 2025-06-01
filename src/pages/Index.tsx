@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
@@ -23,7 +22,8 @@ export interface DocumentData {
 
 const STORAGE_KEYS = {
   KEYWORDS: 'wordlens-keywords',
-  HIGHLIGHT_ENABLED: 'wordlens-highlight-enabled'
+  HIGHLIGHT_ENABLED: 'wordlens-highlight-enabled',
+  CASE_SENSITIVE: 'wordlens-case-sensitive'
 };
 
 const DEFAULT_KEYWORDS: Keyword[] = [
@@ -36,12 +36,14 @@ const Index = () => {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
+  const [caseSensitive, setCaseSensitive] = useState(false);
 
   // Load keywords and settings from localStorage on component mount
   useEffect(() => {
     try {
       const savedKeywords = localStorage.getItem(STORAGE_KEYS.KEYWORDS);
       const savedHighlightEnabled = localStorage.getItem(STORAGE_KEYS.HIGHLIGHT_ENABLED);
+      const savedCaseSensitive = localStorage.getItem(STORAGE_KEYS.CASE_SENSITIVE);
 
       if (savedKeywords) {
         const parsedKeywords = JSON.parse(savedKeywords);
@@ -56,6 +58,10 @@ const Index = () => {
 
       if (savedHighlightEnabled !== null) {
         setHighlightEnabled(savedHighlightEnabled === 'true');
+      }
+
+      if (savedCaseSensitive !== null) {
+        setCaseSensitive(savedCaseSensitive === 'true');
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error);
@@ -80,6 +86,15 @@ const Index = () => {
       console.error('Error saving highlight setting to localStorage:', error);
     }
   }, [highlightEnabled]);
+
+  // Save case sensitive setting to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CASE_SENSITIVE, caseSensitive.toString());
+    } catch (error) {
+      console.error('Error saving case sensitive setting to localStorage:', error);
+    }
+  }, [caseSensitive]);
 
   const addKeyword = useCallback((word: string, color: string) => {
     if (!word?.trim() || !color) {
@@ -139,6 +154,10 @@ const Index = () => {
     setHighlightEnabled(enabled);
   }, []);
 
+  const handleToggleCaseSensitive = useCallback((enabled: boolean) => {
+    setCaseSensitive(enabled);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Header />
@@ -170,6 +189,10 @@ const Index = () => {
                   onRemoveKeyword={removeKeyword}
                   highlightEnabled={highlightEnabled}
                   onToggleHighlight={handleToggleHighlight}
+                  caseSensitive={caseSensitive}
+                  onToggleCaseSensitive={handleToggleCaseSensitive}
+                  documentContent={document.content}
+                  document={document}
                 />
               </Card>
               
@@ -184,6 +207,7 @@ const Index = () => {
                   document={document}
                   keywords={keywords}
                   highlightEnabled={highlightEnabled}
+                  caseSensitive={caseSensitive}
                   onKeywordCountsUpdate={updateKeywordCounts}
                 />
               </Card>

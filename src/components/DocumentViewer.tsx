@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { Keyword, DocumentData } from '@/pages/Index';
 import { getDocumentStats } from '@/utils/fileTypeUtils';
@@ -9,6 +8,7 @@ interface DocumentViewerProps {
   document: DocumentData;
   keywords: Keyword[];
   highlightEnabled: boolean;
+  caseSensitive: boolean;
   onKeywordCountsUpdate: (counts: Record<string, number>) => void;
 }
 
@@ -16,6 +16,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   document,
   keywords,
   highlightEnabled,
+  caseSensitive,
   onKeywordCountsUpdate
 }) => {
   const [highlightedContent, setHighlightedContent] = useState('');
@@ -40,7 +41,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
           
           try {
             const escapedKeyword = keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
+            const regexFlags = caseSensitive ? 'g' : 'gi';
+            const regex = new RegExp(`\\b${escapedKeyword}\\b`, regexFlags);
             const matches = content.match(regex) || [];
             counts[keyword.word] = matches.length;
 
@@ -62,7 +64,8 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
           
           try {
             const escapedKeyword = keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
+            const regexFlags = caseSensitive ? 'g' : 'gi';
+            const regex = new RegExp(`\\b${escapedKeyword}\\b`, regexFlags);
             const matches = content.match(regex) || [];
             counts[keyword.word] = matches.length;
           } catch (regexError) {
@@ -79,7 +82,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
       setHighlightedContent(cleanedContent);
       onKeywordCountsUpdate({});
     }
-  }, [document?.content, keywords, highlightEnabled, onKeywordCountsUpdate]);
+  }, [document?.content, keywords, highlightEnabled, caseSensitive, onKeywordCountsUpdate]);
 
   useEffect(() => {
     processContent();

@@ -1,11 +1,13 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
-import { Plus, X, Eye, EyeOff, Palette } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Download, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Keyword } from '@/pages/Index';
+import { getKeywordSuggestions, keywordCategories } from '@/utils/keywordSuggestions';
+import { exportKeywordResults } from '@/utils/exportUtils';
 
 interface KeywordManagerProps {
   keywords: Keyword[];
@@ -13,6 +15,10 @@ interface KeywordManagerProps {
   onRemoveKeyword: (id: string) => void;
   highlightEnabled: boolean;
   onToggleHighlight: (enabled: boolean) => void;
+  caseSensitive: boolean;
+  onToggleCaseSensitive: (enabled: boolean) => void;
+  documentContent?: string;
+  document?: any;
 }
 
 const colors = [
@@ -25,10 +31,24 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   onAddKeyword,
   onRemoveKeyword,
   highlightEnabled,
-  onToggleHighlight
+  onToggleHighlight,
+  caseSensitive,
+  onToggleCaseSensitive,
+  documentContent = '',
+  document
 }) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [selectedColor, setSelectedColor] = useState(colors[0]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Get keyword suggestions based on document content
+  const suggestions = useMemo(() => {
+    if (!documentContent || !showSuggestions) return [];
+    return getKeywordSuggestions(documentContent).filter(
+      suggestion => !keywords.some(k => k.word.toLowerCase() === suggestion.toLowerCase())
+    );
+  }, [documentContent, keywords, showSuggestions]);
 
   // Memoize keywords array to prevent unnecessary re-renders
   const memoizedKeywords = useMemo(() => keywords, [keywords]);
@@ -98,6 +118,48 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
     }
   }, [onToggleHighlight]);
 
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    setNewKeyword(suggestion);
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    setSelectedColor(colors[randomIndex] || colors[0]);
+  }, []);
+
+  const handleCategorySelect = useCallback((categoryKey: string) => {
+    if (!categoryKey) return;
+    
+    const category = keywordCategories[categoryKey as keyof typeof keywordCategories];
+    if (!category) return;
+    
+    category.keywords.forEach(keyword => {
+      const isDuplicate = keywords.some(k => 
+        k?.word?.toLowerCase() === keyword.toLowerCase()
+      );
+      
+      if (!isDuplicate) {
+        const randomIndex = Math.floor(Math.random() * colors.length);
+        onAddKeyword(keyword, colors[randomIndex] || colors[0]);
+      }
+    });
+    
+    setSelectedCategory('');
+    toast.success(`Added ${category.name} keywords`);
+  }, [keywords, onAddKeyword]);
+
+  const handleExportResults = useCallback((format: 'csv' | 'json') => {
+    if (!document || keywords.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+    
+    try {
+      exportKeywordResults(keywords, document, format);
+      toast.success(`Exported as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export results');
+    }
+  }, [keywords, document]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -106,10 +168,77 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
           {highlightEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           <Switch
             checked={highlightEnabled}
-            onCheckedChange={handleToggleHighlight}
+            onCheckedChange={onToggleHighlight}
           />
         </div>
       </div>
+
+      {/* Settings */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Case Sensitive</span>
+          </div>
+          <Switch
+            checked={caseSensitive}
+            onCheckedChange={onToggleCaseSensitive}
+          />
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <Tag className="w-4 h-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Quick Add</span>
+        </div>
+        
+        <Select value={selectedCategory} onValueChange={handleCategorySelect}>
+          <SelectTrigger>
+            <SelectValue placeholder="Add keyword category..." />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(keywordCategories).map(([key, category]) => (
+              <SelectItem key={key} value={key}>
+                {category.name} ({category.keywords.length} keywords)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {documentContent && (
+          <Button
+            variant="outline"
+            onClick={() => setShowSuggestions(!showSuggestions)}
+            className="w-full"
+            type="button"
+          >
+            <Lightbulb className="w-4 h-4 mr-2" />
+            {showSuggestions ? 'Hide' : 'Show'} Suggestions
+          </Button>
+        )}
+      </div>
+
+      {/* Suggestions */}
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-gray-700">Suggested Keywords</span>
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((suggestion, index) => (
+              <Button
+                key={`suggestion-${index}`}
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="text-xs"
+                type="button"
+              >
+                {suggestion}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         <div className="space-y-3">
@@ -152,6 +281,35 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Export Section */}
+      {keywords.length > 0 && document && (
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-gray-700">Export Results</span>
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportResults('csv')}
+              className="flex-1"
+              type="button"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleExportResults('json')}
+              className="flex-1"
+              type="button"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              JSON
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <h4 className="text-sm font-medium text-gray-700">Active Keywords</h4>
