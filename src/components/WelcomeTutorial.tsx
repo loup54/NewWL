@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Play, FileText, Target, BarChart, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,6 +104,21 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({
             </div>
           </div>
         </Card>
+
+        {/* Developer Attribution */}
+        <div className="text-center mt-8 pt-6 border-t border-gray-200/50">
+          <p className="text-sm text-gray-500 font-medium">
+            Developed by{' '}
+            <a 
+              href="https://www.ourenglish.best" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
+            >
+              www.ourenglish.best
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
