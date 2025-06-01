@@ -6,7 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
-console.log('Creating QueryClient...');
+console.log('App.tsx: Starting app initialization...');
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -24,14 +25,14 @@ const queryClient = new QueryClient({
     },
   },
 });
-console.log('QueryClient created successfully');
+
+console.log('App.tsx: QueryClient created successfully');
 
 const App = () => {
-  console.log('App component render start');
+  console.log('App.tsx: App component render starting');
   
   try {
-    console.log('Creating App JSX...');
-    const appJsx = (
+    return (
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <Routes>
@@ -42,15 +43,8 @@ const App = () => {
         </QueryClientProvider>
       </ErrorBoundary>
     );
-    console.log('App JSX created, returning...');
-    return appJsx;
   } catch (error) {
-    console.error('CRITICAL ERROR in App component:', error);
-    console.error('Error details:', {
-      name: error?.name,
-      message: error?.message,
-      stack: error?.stack
-    });
+    console.error('App.tsx: CRITICAL ERROR in App component:', error);
     throw error;
   }
 };

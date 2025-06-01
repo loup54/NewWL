@@ -21,15 +21,19 @@ export interface Keyword {
 }
 
 const Index = () => {
-  console.log('Index component render start');
+  console.log('Index component starting render');
   
   try {
-    console.log('Initializing state...');
     const [documents, setDocuments] = useState<DocumentData[]>([]);
-    console.log('State initialized successfully');
+    console.log('State initialized, documents:', documents);
 
-    console.log('Starting JSX render...');
-    const jsx = (
+    const handleUploadClick = () => {
+      console.log('Upload button clicked');
+    };
+
+    console.log('About to render JSX');
+    
+    return (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 py-4">
@@ -55,9 +59,9 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Your document analysis tool is loading. Upload a document to get started.
+                Your document analysis tool is ready. Upload a document to get started.
               </p>
-              <Button className="w-full" onClick={() => console.log('Button clicked')}>
+              <Button className="w-full" onClick={handleUploadClick}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Document
               </Button>
@@ -66,14 +70,8 @@ const Index = () => {
         </div>
       </div>
     );
-    
-    console.log('JSX created successfully, returning...');
-    return jsx;
   } catch (error) {
-    console.error('CRITICAL ERROR in Index component:', error);
-    console.error('Error name:', error?.name);
-    console.error('Error message:', error?.message);
-    console.error('Error stack:', error?.stack);
+    console.error('ERROR in Index component:', error);
     throw error;
   }
 };
