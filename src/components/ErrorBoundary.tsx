@@ -21,23 +21,30 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    console.error('ErrorBoundary caught error in getDerivedStateFromError:', error);
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error('ErrorBoundary componentDidCatch - Error:', error);
+    console.error('ErrorBoundary componentDidCatch - Error Info:', errorInfo);
+    console.error('ErrorBoundary componentDidCatch - Stack:', error.stack);
     this.setState({ error, errorInfo });
   }
 
   private handleReset = () => {
+    console.log('ErrorBoundary reset clicked');
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   private handleReload = () => {
+    console.log('ErrorBoundary reload clicked');
     window.location.reload();
   };
 
   public render() {
+    console.log('ErrorBoundary render - hasError:', this.state.hasError);
+    
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
@@ -56,6 +63,11 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-gray-600 text-sm">
                 An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
               </p>
+              {this.state.error && (
+                <p className="text-red-600 text-xs mt-2 font-mono">
+                  Error: {this.state.error.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -69,16 +81,15 @@ export class ErrorBoundary extends Component<Props, State> {
               </Button>
             </div>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-6 text-left">
-                <summary className="text-sm text-gray-500 cursor-pointer">
-                  Error Details (Development)
-                </summary>
-                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                  {this.state.error.toString()}
-                </pre>
-              </details>
-            )}
+            <details className="mt-6 text-left">
+              <summary className="text-sm text-gray-500 cursor-pointer">
+                Error Details
+              </summary>
+              <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                {this.state.error && this.state.error.toString()}
+                {this.state.errorInfo && this.state.errorInfo.componentStack}
+              </pre>
+            </details>
           </Card>
         </div>
       );

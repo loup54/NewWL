@@ -23,47 +23,52 @@ export interface Keyword {
 const Index = () => {
   console.log('Index component starting to render');
   
-  const [documents, setDocuments] = useState<DocumentData[]>([]);
+  try {
+    const [documents, setDocuments] = useState<DocumentData[]>([]);
 
-  console.log('Index component state initialized, rendering UI');
+    console.log('Index component state initialized, rendering UI');
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">WordLens</h1>
-              <p className="text-sm text-gray-600">Insight Engine</p>
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white border-b border-gray-200">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">WordLens</h1>
+                <p className="text-sm text-gray-600">Insight Engine</p>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-4xl mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="w-5 h-5" />
-              Welcome to WordLens
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4">
-              Your document analysis tool is loading. Upload a document to get started.
-            </p>
-            <Button className="w-full">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Document
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="max-w-4xl mx-auto p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="w-5 h-5" />
+                Welcome to WordLens
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Your document analysis tool is loading. Upload a document to get started.
+              </p>
+              <Button className="w-full">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Document
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error in Index component:', error);
+    throw error;
+  }
 };
 
 export default Index;
