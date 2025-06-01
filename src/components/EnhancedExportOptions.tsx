@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Download, FileText, Table, File, BarChart3, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -83,7 +82,7 @@ export const EnhancedExportOptions: React.FC<EnhancedExportOptionsProps> = ({
       
       let chartElement: HTMLElement | undefined;
       if (includeCharts) {
-        chartElement = document.querySelector('.recharts-wrapper') as HTMLElement;
+        chartElement = window.document.querySelector('.recharts-wrapper') as HTMLElement;
       }
 
       switch (exportFormat) {

@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
@@ -184,10 +183,10 @@ export const generateWordDocument = async (data: ExportData) => {
           rows: [
             new TableRow({
               children: [
-                new TableCell({ children: [new Paragraph({ text: 'Keyword', bold: true })] }),
-                new TableCell({ children: [new Paragraph({ text: 'Count', bold: true })] }),
-                new TableCell({ children: [new Paragraph({ text: 'Density %', bold: true })] }),
-                new TableCell({ children: [new Paragraph({ text: 'Color', bold: true })] })
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Keyword', bold: true })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Count', bold: true })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Density %', bold: true })] })] }),
+                new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Color', bold: true })] })] })
               ]
             }),
             ...data.keywords.map(keyword => {
@@ -234,14 +233,14 @@ export const generateExcelReport = (data: ExportData) => {
     ['Upload Date', data.document.uploadDate.toLocaleDateString()],
     [''],
     ['Document Statistics'],
-    ['Total Words', data.documentStats.totalWords],
-    ['Total Characters', data.documentStats.totalCharacters],
+    ['Total Words', data.documentStats.totalWords.toString()],
+    ['Total Characters', data.documentStats.totalCharacters.toString()],
     ['Average Words per Sentence', data.documentStats.avgWordsPerSentence.toFixed(1)],
-    ['Estimated Reading Time (minutes)', data.documentStats.readingTime],
+    ['Estimated Reading Time (minutes)', data.documentStats.readingTime.toString()],
     [''],
     ['Summary'],
-    ['Total Keywords Analyzed', data.keywords.length],
-    ['Total Keyword Occurrences', Object.values(data.keywordCounts).reduce((sum, count) => sum + count, 0)]
+    ['Total Keywords Analyzed', data.keywords.length.toString()],
+    ['Total Keyword Occurrences', Object.values(data.keywordCounts).reduce((sum, count) => sum + count, 0).toString()]
   ];
 
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -261,7 +260,7 @@ export const generateExcelReport = (data: ExportData) => {
   sortedKeywords.forEach((keyword, index) => {
     const count = data.keywordCounts[keyword.word] || 0;
     const density = ((count / data.documentStats.totalWords) * 100).toFixed(2);
-    keywordData.push([keyword.word, count, density, keyword.color, index + 1]);
+    keywordData.push([keyword.word, count.toString(), density, keyword.color, (index + 1).toString()]);
   });
 
   const keywordSheet = XLSX.utils.aoa_to_sheet(keywordData);
@@ -271,7 +270,7 @@ export const generateExcelReport = (data: ExportData) => {
   const rawData = [
     ['All Data Export'],
     [''],
-    ['Document Content Length', data.document.content.length],
+    ['Document Content Length', data.document.content.length.toString()],
     ['Analysis Timestamp', new Date().toISOString()],
     [''],
     ['Keyword', 'Word', 'Count', 'Color', 'ID']
@@ -279,7 +278,7 @@ export const generateExcelReport = (data: ExportData) => {
 
   data.keywords.forEach(keyword => {
     const count = data.keywordCounts[keyword.word] || 0;
-    rawData.push(['Keyword', keyword.word, count, keyword.color, keyword.id]);
+    rawData.push(['Keyword', keyword.word, count.toString(), keyword.color, keyword.id]);
   });
 
   const rawSheet = XLSX.utils.aoa_to_sheet(rawData);
@@ -322,8 +321,8 @@ const generateComparisonExcel = (data: any) => {
     ['Document Comparison Report'],
     [''],
     ['Analysis Information'],
-    ['Number of Documents', data.totalDocuments],
-    ['Number of Keywords', data.totalKeywords],
+    ['Number of Documents', data.totalDocuments.toString()],
+    ['Number of Keywords', data.totalKeywords.toString()],
     ['Analysis Date', data.analysisDate.toLocaleDateString()],
     [''],
     ['Documents Analyzed']
@@ -343,7 +342,7 @@ const generateComparisonExcel = (data: any) => {
   data.keywords.forEach((keyword: Keyword) => {
     const row = [keyword.word];
     data.documents.forEach((doc: DocumentData) => {
-      row.push(data.keywordCounts[doc.filename]?.[keyword.word] || 0);
+      row.push((data.keywordCounts[doc.filename]?.[keyword.word] || 0).toString());
     });
     matrixData.push(row);
   });
