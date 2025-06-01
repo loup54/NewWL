@@ -9,7 +9,7 @@ interface UseLazyLoadingOptions {
 export const useLazyLoading = (options: UseLazyLoadingOptions = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
 
   const { threshold = 0.1, rootMargin = '50px' } = options;
 

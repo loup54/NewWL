@@ -174,12 +174,12 @@ export const VirtualizedDocumentViewer: React.FC<VirtualizedDocumentViewerProps>
     
     const blob = new Blob([document.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = window.document.createElement('a');
     link.href = url;
     link.download = `analyzed_${document.filename}`;
-    document.body.appendChild(link);
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }, [document]);
 
@@ -211,6 +211,7 @@ export const VirtualizedDocumentViewer: React.FC<VirtualizedDocumentViewerProps>
       <div className="flex-1">
         <List
           height={600}
+          width="100%"
           itemCount={lines.length}
           itemSize={32}
           itemData={{

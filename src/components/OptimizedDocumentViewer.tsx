@@ -53,7 +53,7 @@ export const OptimizedDocumentViewer: React.FC<OptimizedDocumentViewerProps> = (
     if (!document) return '';
     return createCacheKey(
       'processed-content',
-      document.id || document.filename,
+      document.filename || 'unknown',
       keywords.map(k => k.word).join(','),
       highlightEnabled.toString(),
       caseSensitive.toString()
@@ -66,7 +66,7 @@ export const OptimizedDocumentViewer: React.FC<OptimizedDocumentViewerProps> = (
     
     const cached = documentCache.get(cacheKey);
     if (cached) {
-      debouncedKeywordUpdate(cached);
+      debouncedKeywordUpdate(cached as Record<string, number>);
       return;
     }
     
@@ -107,7 +107,7 @@ export const OptimizedDocumentViewer: React.FC<OptimizedDocumentViewerProps> = (
   // Use lazy loading for better initial page load
   if (!isVisible) {
     return (
-      <div ref={elementRef} className="h-full flex items-center justify-center">
+      <div ref={elementRef as React.RefObject<HTMLDivElement>} className="h-full flex items-center justify-center">
         <LoadingState type="processing" message="Loading document..." />
       </div>
     );

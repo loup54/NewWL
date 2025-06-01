@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, forwardRef } from 'react';
-import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag, FileTemplate, History } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag, FileText, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -241,7 +241,7 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
             className="w-full text-left justify-start"
             type="button"
           >
-            <FileTemplate className="w-4 h-4 mr-2" />
+            <FileText className="w-4 h-4 mr-2" />
             Templates
           </Button>
           
