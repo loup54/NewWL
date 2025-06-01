@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, FileX } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ interface FileUploadProps {
   onDocumentUpload: (document: DocumentData) => void;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
+export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDocumentUpload }, ref) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
@@ -100,7 +100,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
           }
         `}
       >
-        <input {...getInputProps()} />
+        <input {...getInputProps()} ref={ref} />
         
         <div className="space-y-4">
           {isDragReject ? (
@@ -155,4 +155,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
       </div>
     </div>
   );
-};
+});
+
+FileUpload.displayName = 'FileUpload';

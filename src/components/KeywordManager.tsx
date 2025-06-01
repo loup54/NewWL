@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, forwardRef } from 'react';
 import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,7 @@ const colors = [
   '#fb7185', '#4ade80', '#38bdf8', '#fcd34d', '#818cf8'
 ];
 
-export const KeywordManager: React.FC<KeywordManagerProps> = ({
+export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(({
   keywords,
   onAddKeyword,
   onRemoveKeyword,
@@ -46,7 +46,7 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   document,
   keywordCounts = {},
   documentStats
-}) => {
+}, ref) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -244,6 +244,7 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
             onKeyDown={handleKeyDown}
             className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
             autoComplete="off"
+            ref={ref}
           />
           
           <div className="space-y-2">
@@ -325,4 +326,6 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
       </div>
     </div>
   );
-};
+});
+
+KeywordManager.displayName = 'KeywordManager';
