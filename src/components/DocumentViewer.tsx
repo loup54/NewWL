@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { FileText, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -55,12 +54,12 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const handleExport = () => {
     const blob = new Blob([document.content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `analyzed_${document.filename}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = `analyzed_${document.filename}`;
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
