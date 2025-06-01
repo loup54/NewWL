@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { FileText, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Keyword, DocumentData } from '@/pages/Index';
@@ -18,50 +19,91 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
 }) => {
   const [highlightedContent, setHighlightedContent] = useState('');
 
-  useEffect(() => {
-    if (!document.content) return;
+  const processContent = useCallback(() => {
+    if (!document?.content || !Array.isArray(keywords)) {
+      setHighlightedContent(document?.content || '');
+      onKeywordCountsUpdate({});
+      return;
+    }
 
     let content = document.content;
     const counts: Record<string, number> = {};
 
-    if (highlightEnabled && keywords.length > 0) {
-      // Count occurrences and highlight
-      keywords.forEach(keyword => {
-        const regex = new RegExp(`\\b${keyword.word}\\b`, 'gi');
-        const matches = content.match(regex) || [];
-        counts[keyword.word] = matches.length;
+    try {
+      if (highlightEnabled && keywords.length > 0) {
+        // Count occurrences and highlight
+        keywords.forEach(keyword => {
+          if (!keyword?.word) return;
+          
+          try {
+            const regex = new RegExp(`\\b${keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+            const matches = content.match(regex) || [];
+            counts[keyword.word] = matches.length;
 
-        if (matches.length > 0) {
-          content = content.replace(
-            regex,
-            `<mark style="background-color: ${keyword.color}; padding: 2px 4px; border-radius: 3px; color: #000;">$&</mark>`
-          );
-        }
-      });
-    } else {
-      // Count without highlighting
-      keywords.forEach(keyword => {
-        const regex = new RegExp(`\\b${keyword.word}\\b`, 'gi');
-        const matches = content.match(regex) || [];
-        counts[keyword.word] = matches.length;
-      });
+            if (matches.length > 0 && keyword.color) {
+              content = content.replace(
+                regex,
+                `<mark style="background-color: ${keyword.color}; padding: 2px 4px; border-radius: 3px; color: #000;">$&</mark>`
+              );
+            }
+          } catch (regexError) {
+            console.error('Regex error for keyword:', keyword.word, regexError);
+            counts[keyword.word] = 0;
+          }
+        });
+      } else {
+        // Count without highlighting
+        keywords.forEach(keyword => {
+          if (!keyword?.word) return;
+          
+          try {
+            const regex = new RegExp(`\\b${keyword.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
+            const matches = content.match(regex) || [];
+            counts[keyword.word] = matches.length;
+          } catch (regexError) {
+            console.error('Regex error for keyword:', keyword.word, regexError);
+            counts[keyword.word] = 0;
+          }
+        });
+      }
+
+      setHighlightedContent(content);
+      onKeywordCountsUpdate(counts);
+    } catch (error) {
+      console.error('Error processing content:', error);
+      setHighlightedContent(document.content);
+      onKeywordCountsUpdate({});
+    }
+  }, [document?.content, keywords, highlightEnabled, onKeywordCountsUpdate]);
+
+  useEffect(() => {
+    processContent();
+  }, [processContent]);
+
+  const handleExport = useCallback(() => {
+    if (!document?.content || !document?.filename) {
+      console.error('No document content or filename available for export');
+      return;
     }
 
-    setHighlightedContent(content);
-    onKeywordCountsUpdate(counts);
-  }, [document.content, keywords, highlightEnabled, onKeywordCountsUpdate]);
+    try {
+      const blob = new Blob([document.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = `analyzed_${document.filename}`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting document:', error);
+    }
+  }, [document]);
 
-  const handleExport = () => {
-    const blob = new Blob([document.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = window.document.createElement('a');
-    link.href = url;
-    link.download = `analyzed_${document.filename}`;
-    window.document.body.appendChild(link);
-    link.click();
-    window.document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  if (!document) {
+    return <div>No document loaded</div>;
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -72,13 +114,13 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">{document.filename}</h3>
+              <h3 className="text-xl font-semibold text-gray-900">{document.filename || 'Untitled'}</h3>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
-                  <span>{document.uploadDate.toLocaleDateString()}</span>
+                  <span>{document.uploadDate?.toLocaleDateString() || 'Unknown date'}</span>
                 </div>
-                <span>{document.content.length.toLocaleString()} characters</span>
+                <span>{(document.content?.length || 0).toLocaleString()} characters</span>
               </div>
             </div>
           </div>
@@ -87,6 +129,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
             onClick={handleExport}
             variant="outline"
             className="flex items-center space-x-2 hover:bg-blue-50 border-blue-200"
+            type="button"
           >
             <Download className="w-4 h-4" />
             <span>Export</span>

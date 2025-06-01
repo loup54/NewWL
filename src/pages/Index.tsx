@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
 import { KeywordManager } from '@/components/KeywordManager';
@@ -31,28 +31,63 @@ const Index = () => {
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
 
-  const addKeyword = (word: string, color: string) => {
+  const addKeyword = useCallback((word: string, color: string) => {
+    if (!word?.trim() || !color) {
+      console.error('Invalid keyword or color provided');
+      return;
+    }
+
     const newKeyword: Keyword = {
-      id: Date.now().toString(),
-      word: word.toLowerCase(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      word: word.toLowerCase().trim(),
       color,
       count: 0
     };
-    setKeywords([...keywords, newKeyword]);
-  };
 
-  const removeKeyword = (id: string) => {
-    setKeywords(keywords.filter(k => k.id !== id));
-  };
+    setKeywords(prevKeywords => {
+      // Prevent duplicates
+      const isDuplicate = prevKeywords.some(k => k.word === newKeyword.word);
+      if (isDuplicate) {
+        return prevKeywords;
+      }
+      return [...prevKeywords, newKeyword];
+    });
+  }, []);
 
-  const updateKeywordCounts = (counts: Record<string, number>) => {
-    setKeywords(prev => 
-      prev.map(keyword => ({
+  const removeKeyword = useCallback((id: string) => {
+    if (!id) {
+      console.error('Invalid keyword id provided');
+      return;
+    }
+
+    setKeywords(prevKeywords => prevKeywords.filter(k => k.id !== id));
+  }, []);
+
+  const updateKeywordCounts = useCallback((counts: Record<string, number>) => {
+    if (!counts || typeof counts !== 'object') {
+      console.error('Invalid counts provided');
+      return;
+    }
+
+    setKeywords(prevKeywords => 
+      prevKeywords.map(keyword => ({
         ...keyword,
         count: counts[keyword.word] || 0
       }))
     );
-  };
+  }, []);
+
+  const handleDocumentUpload = useCallback((newDocument: DocumentData) => {
+    if (!newDocument || !newDocument.content) {
+      console.error('Invalid document provided');
+      return;
+    }
+    setDocument(newDocument);
+  }, []);
+
+  const handleToggleHighlight = useCallback((enabled: boolean) => {
+    setHighlightEnabled(enabled);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -72,7 +107,7 @@ const Index = () => {
             </div>
             
             <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <FileUpload onDocumentUpload={setDocument} />
+              <FileUpload onDocumentUpload={handleDocumentUpload} />
             </Card>
           </div>
         ) : (
@@ -84,7 +119,7 @@ const Index = () => {
                   onAddKeyword={addKeyword}
                   onRemoveKeyword={removeKeyword}
                   highlightEnabled={highlightEnabled}
-                  onToggleHighlight={setHighlightEnabled}
+                  onToggleHighlight={handleToggleHighlight}
                 />
               </Card>
               

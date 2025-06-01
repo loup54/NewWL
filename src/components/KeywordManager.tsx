@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Plus, X, Eye, EyeOff, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,47 +30,73 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   const [newKeyword, setNewKeyword] = useState('');
   const [selectedColor, setSelectedColor] = useState(colors[0]);
 
-  console.log('KeywordManager render - newKeyword:', newKeyword);
-  console.log('KeywordManager render - keywords length:', keywords.length);
+  // Memoize keywords array to prevent unnecessary re-renders
+  const memoizedKeywords = useMemo(() => keywords, [keywords]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Input change event:', e.target.value);
-    setNewKeyword(e.target.value);
+    const value = e.target.value;
+    setNewKeyword(value);
   }, []);
 
   const handleAddKeyword = useCallback(() => {
-    if (!newKeyword.trim()) {
+    const trimmedKeyword = newKeyword.trim();
+    
+    if (!trimmedKeyword) {
       toast.error('Please enter a keyword');
       return;
     }
 
-    if (keywords.some(k => k.word.toLowerCase() === newKeyword.toLowerCase())) {
+    // Check for duplicates safely
+    const isDuplicate = memoizedKeywords.some(k => 
+      k?.word?.toLowerCase() === trimmedKeyword.toLowerCase()
+    );
+
+    if (isDuplicate) {
       toast.error('Keyword already exists');
       return;
     }
 
-    onAddKeyword(newKeyword.trim(), selectedColor);
-    setNewKeyword('');
-    setSelectedColor(colors[Math.floor(Math.random() * colors.length)]);
-    toast.success(`Added keyword: ${newKeyword}`);
-  }, [newKeyword, selectedColor, keywords, onAddKeyword]);
+    try {
+      onAddKeyword(trimmedKeyword, selectedColor);
+      setNewKeyword('');
+      // Use a safe random color selection
+      const randomIndex = Math.floor(Math.random() * colors.length);
+      setSelectedColor(colors[randomIndex] || colors[0]);
+      toast.success(`Added keyword: ${trimmedKeyword}`);
+    } catch (error) {
+      console.error('Error adding keyword:', error);
+      toast.error('Failed to add keyword');
+    }
+  }, [newKeyword, selectedColor, memoizedKeywords, onAddKeyword]);
 
   const handleRemoveKeyword = useCallback((id: string, word: string) => {
-    onRemoveKeyword(id);
-    toast.success(`Removed keyword: ${word}`);
+    try {
+      onRemoveKeyword(id);
+      toast.success(`Removed keyword: ${word}`);
+    } catch (error) {
+      console.error('Error removing keyword:', error);
+      toast.error('Failed to remove keyword');
+    }
   }, [onRemoveKeyword]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log('Key down event:', e.key);
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleAddKeyword();
     }
   }, [handleAddKeyword]);
 
   const handleColorSelect = useCallback((color: string) => {
-    console.log('Color selected:', color);
     setSelectedColor(color);
   }, []);
+
+  const handleToggleHighlight = useCallback((enabled: boolean) => {
+    try {
+      onToggleHighlight(enabled);
+    } catch (error) {
+      console.error('Error toggling highlight:', error);
+    }
+  }, [onToggleHighlight]);
 
   return (
     <div className="space-y-6">
@@ -80,7 +106,7 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
           {highlightEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
           <Switch
             checked={highlightEnabled}
-            onCheckedChange={onToggleHighlight}
+            onCheckedChange={handleToggleHighlight}
           />
         </div>
       </div>
@@ -104,12 +130,13 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
             <div className="flex flex-wrap gap-2">
               {colors.map((color, index) => (
                 <button
-                  key={`color-${index}`}
+                  key={`color-${index}-${color}`}
                   onClick={() => handleColorSelect(color)}
                   className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
                     selectedColor === color ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
                   }`}
                   style={{ backgroundColor: color }}
+                  type="button"
                 />
               ))}
             </div>
@@ -118,6 +145,7 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
           <Button 
             onClick={handleAddKeyword}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+            type="button"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Keyword
@@ -128,31 +156,37 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
       <div className="space-y-2">
         <h4 className="text-sm font-medium text-gray-700">Active Keywords</h4>
         <div className="space-y-2 max-h-48 overflow-y-auto">
-          {keywords.map((keyword) => (
-            <div
-              key={keyword.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:border-gray-300 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-4 h-4 rounded-full border"
-                  style={{ backgroundColor: keyword.color }}
-                />
-                <span className="font-medium text-gray-900">{keyword.word}</span>
-                <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-full">
-                  {keyword.count}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleRemoveKeyword(keyword.id, keyword.word)}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          {memoizedKeywords.map((keyword) => {
+            // Safety check to prevent crashes
+            if (!keyword || !keyword.id) return null;
+            
+            return (
+              <div
+                key={keyword.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border hover:border-gray-300 transition-all duration-200"
               >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+                <div className="flex items-center space-x-3">
+                  <div
+                    className="w-4 h-4 rounded-full border"
+                    style={{ backgroundColor: keyword.color || '#gray' }}
+                  />
+                  <span className="font-medium text-gray-900">{keyword.word || 'Unknown'}</span>
+                  <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-full">
+                    {keyword.count || 0}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveKeyword(keyword.id, keyword.word || 'Unknown')}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  type="button"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
