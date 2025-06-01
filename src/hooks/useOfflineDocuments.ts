@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { offlineStorage, StoredDocument } from '@/utils/offlineStorage';
 import { DocumentData } from '@/pages/Index';
@@ -71,9 +70,12 @@ export const useOfflineDocuments = () => {
       if (!storedDocument) return null;
 
       return {
+        id: storedDocument.id,
         content: storedDocument.content,
         filename: storedDocument.filename,
-        uploadDate: storedDocument.uploadDate
+        uploadDate: storedDocument.uploadDate,
+        fileSize: storedDocument.size,
+        fileType: 'text/plain'
       };
     } catch (error) {
       console.error('Error loading document offline:', error);

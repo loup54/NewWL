@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
@@ -43,6 +42,7 @@ const Index = () => {
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [keywordCounts, setKeywordCounts] = useState<Record<string, number>>({});
+  const [documentKeywordCounts, setDocumentKeywordCounts] = useState<Record<string, Record<string, number>>>({});
 
   const handleFileUpload = useCallback((files: File[]) => {
     files.forEach(file => {
@@ -94,7 +94,15 @@ const Index = () => {
       ...keyword,
       count: counts[keyword.word] || 0
     })));
-  }, []);
+    
+    // Update document-specific keyword counts
+    if (selectedDocument) {
+      setDocumentKeywordCounts(prev => ({
+        ...prev,
+        [selectedDocument.id]: counts
+      }));
+    }
+  }, [selectedDocument]);
 
   if (isMobile) {
     return (
@@ -254,7 +262,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <DocumentComparison documents={documents} keywords={keywords} keywordCounts={keywordCounts} />
+                  <DocumentComparison documents={documents} keywords={keywords} keywordCounts={documentKeywordCounts} />
                 </CardContent>
               </Card>
             </TabsContent>
