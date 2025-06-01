@@ -1,5 +1,6 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
-import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Download, Tag } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Keyword } from '@/pages/Index';
 import { getKeywordSuggestions, keywordCategories } from '@/utils/keywordSuggestions';
-import { exportKeywordResults } from '@/utils/exportUtils';
+import { EnhancedExportOptions } from './EnhancedExportOptions';
 
 interface KeywordManagerProps {
   keywords: Keyword[];
@@ -19,6 +20,13 @@ interface KeywordManagerProps {
   onToggleCaseSensitive: (enabled: boolean) => void;
   documentContent?: string;
   document?: any;
+  keywordCounts?: Record<string, number>;
+  documentStats?: {
+    totalWords: number;
+    totalCharacters: number;
+    avgWordsPerSentence: number;
+    readingTime: number;
+  };
 }
 
 const colors = [
@@ -35,7 +43,9 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   caseSensitive,
   onToggleCaseSensitive,
   documentContent = '',
-  document
+  document,
+  keywordCounts = {},
+  documentStats
 }) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [selectedColor, setSelectedColor] = useState(colors[0]);
@@ -144,21 +154,6 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
     setSelectedCategory('');
     toast.success(`Added ${category.name} keywords`);
   }, [keywords, onAddKeyword]);
-
-  const handleExportResults = useCallback((format: 'csv' | 'json') => {
-    if (!document || keywords.length === 0) {
-      toast.error('No data to export');
-      return;
-    }
-    
-    try {
-      exportKeywordResults(keywords, document, format);
-      toast.success(`Exported as ${format.toUpperCase()}`);
-    } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export results');
-    }
-  }, [keywords, document]);
 
   return (
     <div className="space-y-6">
@@ -282,33 +277,14 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
         </div>
       </div>
 
-      {/* Export Section */}
+      {/* Enhanced Export Section */}
       {keywords.length > 0 && document && (
-        <div className="space-y-2">
-          <span className="text-sm font-medium text-gray-700">Export Results</span>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExportResults('csv')}
-              className="flex-1"
-              type="button"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              CSV
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExportResults('json')}
-              className="flex-1"
-              type="button"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              JSON
-            </Button>
-          </div>
-        </div>
+        <EnhancedExportOptions
+          keywords={keywords}
+          document={document}
+          keywordCounts={keywordCounts}
+          documentStats={documentStats}
+        />
       )}
 
       <div className="space-y-2">

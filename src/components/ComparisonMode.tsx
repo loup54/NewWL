@@ -1,13 +1,13 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DocumentData, Keyword } from '@/pages/Index';
 import { MultiDocumentUpload } from './MultiDocumentUpload';
 import { DocumentComparison } from './DocumentComparison';
 import { KeywordManager } from './KeywordManager';
-import { toast } from 'sonner';
+import { EnhancedExportOptions } from './EnhancedExportOptions';
 
 interface ComparisonModeProps {
   onBack: () => void;
@@ -86,42 +86,6 @@ export const ComparisonMode: React.FC<ComparisonModeProps> = ({
     setKeywordCounts(newCounts);
   }, [documents, keywords]);
 
-  const exportComparison = useCallback(() => {
-    if (documents.length < 2) {
-      toast.error('Need at least 2 documents to export comparison');
-      return;
-    }
-
-    const data = {
-      comparisonDate: new Date().toISOString(),
-      documents: documents.map(doc => ({
-        filename: doc.filename,
-        uploadDate: doc.uploadDate,
-        wordCount: doc.content.trim().split(/\s+/).length
-      })),
-      keywords: keywords.map(keyword => ({
-        word: keyword.word,
-        color: keyword.color,
-        counts: documents.reduce((acc, doc) => {
-          acc[doc.filename] = keywordCounts[doc.filename]?.[keyword.word] || 0;
-          return acc;
-        }, {} as Record<string, number>)
-      }))
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `document_comparison_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast.success('Comparison exported successfully');
-  }, [documents, keywords, keywordCounts]);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -132,12 +96,6 @@ export const ComparisonMode: React.FC<ComparisonModeProps> = ({
           </Button>
           <h2 className="text-2xl font-bold text-gray-900">Document Comparison</h2>
         </div>
-        {documents.length >= 2 && (
-          <Button onClick={exportComparison} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export Comparison
-          </Button>
-        )}
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
@@ -164,6 +122,15 @@ export const ComparisonMode: React.FC<ComparisonModeProps> = ({
               documentContent=""
             />
           </Card>
+
+          {documents.length >= 2 && (
+            <EnhancedExportOptions
+              keywords={keywords}
+              documents={documents}
+              keywordCounts={keywordCounts}
+              isComparisonMode={true}
+            />
+          )}
         </div>
 
         <div className="lg:col-span-3">
