@@ -32,9 +32,27 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
     onDrop,
     accept: {
       'text/plain': ['.txt'],
-      'text/html': ['.html'],
-      'text/markdown': ['.md'],
-      'application/rtf': ['.rtf']
+      'text/html': ['.html', '.htm'],
+      'text/markdown': ['.md', '.markdown'],
+      'text/csv': ['.csv'],
+      'text/xml': ['.xml'],
+      'application/rtf': ['.rtf'],
+      'application/json': ['.json'],
+      'application/javascript': ['.js', '.jsx'],
+      'application/typescript': ['.ts', '.tsx'],
+      'text/css': ['.css'],
+      'application/sql': ['.sql'],
+      'text/x-python': ['.py'],
+      'text/x-java': ['.java'],
+      'text/x-c': ['.c', '.h'],
+      'text/x-c++': ['.cpp', '.hpp', '.cc'],
+      'text/x-php': ['.php'],
+      'text/x-ruby': ['.rb'],
+      'text/x-go': ['.go'],
+      'text/x-rust': ['.rs'],
+      'application/x-yaml': ['.yml', '.yaml'],
+      'text/x-log': ['.log'],
+      'text/x-ini': ['.ini', '.cfg', '.conf']
     },
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024 // 50MB
@@ -75,15 +93,25 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
             </h3>
             <p className="text-gray-600 mb-4">
               {isDragReject 
-                ? 'File type not supported. Please upload a text file.'
+                ? 'File type not supported. Please upload a supported document format.'
                 : 'Drag and drop your document here, or click to browse'
               }
             </p>
-            <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500">
+            <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500 mb-2">
               <span className="px-3 py-1 bg-gray-100 rounded-full">.txt</span>
               <span className="px-3 py-1 bg-gray-100 rounded-full">.html</span>
               <span className="px-3 py-1 bg-gray-100 rounded-full">.md</span>
               <span className="px-3 py-1 bg-gray-100 rounded-full">.rtf</span>
+              <span className="px-3 py-1 bg-gray-100 rounded-full">.csv</span>
+              <span className="px-3 py-1 bg-gray-100 rounded-full">.json</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500">
+              <span className="px-3 py-1 bg-blue-50 rounded-full">.js/.ts</span>
+              <span className="px-3 py-1 bg-blue-50 rounded-full">.py</span>
+              <span className="px-3 py-1 bg-blue-50 rounded-full">.java</span>
+              <span className="px-3 py-1 bg-blue-50 rounded-full">.cpp</span>
+              <span className="px-3 py-1 bg-blue-50 rounded-full">.php</span>
+              <span className="px-3 py-1 bg-blue-50 rounded-full">& more</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">Maximum file size: 50MB</p>
           </div>
