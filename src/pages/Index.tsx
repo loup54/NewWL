@@ -19,7 +19,7 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Smartphone } from 'lucide-react';
+import { FileText, Smartphone, HardDrive } from 'lucide-react';
 import { toast } from 'sonner';
 import { PWAInstallBanner } from '@/components/PWAInstallBanner';
 import { DocumentSkeleton, KeywordManagerSkeleton } from '@/components/DocumentSkeleton';
