@@ -23,8 +23,15 @@ interface EnhancedExportOptionsProps {
   documentStats?: {
     totalWords: number;
     totalCharacters: number;
+    totalSentences: number;
+    totalParagraphs: number;
     avgWordsPerSentence: number;
+    avgSentencesPerParagraph: number;
     readingTime: number;
+    complexityScore: number;
+    wordFrequency: Record<string, number>;
+    longestWords: string[];
+    mostCommonWords: string[];
   };
   isComparisonMode?: boolean;
 }
@@ -71,8 +78,11 @@ export const EnhancedExportOptions: React.FC<EnhancedExportOptionsProps> = ({
       return;
     }
 
-    // Calculate advanced stats if not provided
-    const advancedStats = documentStats || calculateAdvancedStats(document.content);
+    // Calculate advanced stats if not provided or incomplete
+    const advancedStats = documentStats && 
+      'complexityScore' in documentStats && 
+      'wordFrequency' in documentStats ? 
+      documentStats : calculateAdvancedStats(document.content);
 
     const exportData: ExportData = {
       document,

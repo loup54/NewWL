@@ -78,8 +78,8 @@ export const calculateAdvancedStats = (content: string): AdvancedDocumentStats =
     .filter((word, index, arr) => arr.indexOf(word) === index);
 
   // Complexity score (based on sentence length, word length, and vocabulary diversity)
-  const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / totalWords || 0;
-  const vocabularyDiversity = Object.keys(wordFrequency).length / totalWords || 0;
+  const avgWordLength = totalWords > 0 ? words.reduce((sum, word) => sum + word.length, 0) / totalWords : 0;
+  const vocabularyDiversity = totalWords > 0 ? Object.keys(wordFrequency).length / totalWords : 0;
   const complexityScore = Math.min(100, 
     (avgWordsPerSentence * 2) + 
     (avgWordLength * 8) + 

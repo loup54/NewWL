@@ -185,13 +185,13 @@ export const generateExcelReport = (data: ExportData) => {
   const statsData = [
     ['Metric', 'Value'],
     ['Document Name', data.document.filename],
-    ['Total Words', data.documentStats.totalWords],
-    ['Total Characters', data.documentStats.totalCharacters],
-    ['Reading Time (minutes)', data.documentStats.readingTime],
-    ['Complexity Score', data.documentStats.complexityScore],
-    ['Average Words per Sentence', data.documentStats.avgWordsPerSentence],
-    ['Total Sentences', data.documentStats.totalSentences],
-    ['Total Paragraphs', data.documentStats.totalParagraphs]
+    ['Total Words', data.documentStats.totalWords.toString()],
+    ['Total Characters', data.documentStats.totalCharacters.toString()],
+    ['Reading Time (minutes)', data.documentStats.readingTime.toString()],
+    ['Complexity Score', data.documentStats.complexityScore.toString()],
+    ['Average Words per Sentence', data.documentStats.avgWordsPerSentence.toString()],
+    ['Total Sentences', data.documentStats.totalSentences.toString()],
+    ['Total Paragraphs', data.documentStats.totalParagraphs.toString()]
   ];
   const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
   XLSX.utils.book_append_sheet(workbook, statsSheet, 'Document Stats');
@@ -204,7 +204,7 @@ export const generateExcelReport = (data: ExportData) => {
     const count = data.keywordCounts[keyword.word] || 0;
     const density = data.documentStats.totalWords > 0 ? 
       (count / data.documentStats.totalWords * 100).toFixed(2) : '0.00';
-    keywordData.push([keyword.word, count, density]);
+    keywordData.push([keyword.word, count.toString(), density]);
   });
   const keywordsSheet = XLSX.utils.aoa_to_sheet(keywordData);
   XLSX.utils.book_append_sheet(workbook, keywordsSheet, 'Keywords');
@@ -215,7 +215,7 @@ export const generateExcelReport = (data: ExportData) => {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 50)
     .forEach(([word, count]) => {
-      wordFreqData.push([word, count]);
+      wordFreqData.push([word, count.toString()]);
     });
   const wordFreqSheet = XLSX.utils.aoa_to_sheet(wordFreqData);
   XLSX.utils.book_append_sheet(workbook, wordFreqSheet, 'Word Frequency');
@@ -243,7 +243,7 @@ export const generateComparisonReport = (
         return sum + (keywordCounts[doc.filename]?.[keyword.word] || 0);
       }, 0);
       const density = totalWords > 0 ? (totalKeywords / totalWords * 100).toFixed(2) : '0.00';
-      summaryData.push([doc.filename, totalWords, totalKeywords, density]);
+      summaryData.push([doc.filename, totalWords.toString(), totalKeywords.toString(), density]);
     });
 
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -252,9 +252,9 @@ export const generateComparisonReport = (
     // Detailed Comparison
     const detailData = [['Keyword', ...documents.map(doc => doc.filename)]];
     keywords.forEach(keyword => {
-      const row = [keyword.word];
+      const row: (string | number)[] = [keyword.word];
       documents.forEach(doc => {
-        row.push(keywordCounts[doc.filename]?.[keyword.word] || 0);
+        row.push((keywordCounts[doc.filename]?.[keyword.word] || 0).toString());
       });
       detailData.push(row);
     });
