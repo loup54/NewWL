@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, forwardRef } from 'react';
-import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag, Template, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -7,6 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Keyword } from '@/pages/Index';
 import { getKeywordSuggestions, keywordCategories } from '@/utils/keywordSuggestions';
+import { getAdvancedKeywordSuggestions } from '@/utils/advancedKeywordSuggestions';
+import { DocumentTemplateSelector } from './DocumentTemplateSelector';
+import { DocumentVersionHistory } from './DocumentVersionHistory';
+import { DocumentTemplate } from '@/utils/documentTemplates';
 import { EnhancedExportOptions } from './EnhancedExportOptions';
 
 interface KeywordManagerProps {
@@ -50,17 +54,40 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
   const [selectedColor, setSelectedColor] = useState(colors[0]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   // Get keyword suggestions based on document content
   const suggestions = useMemo(() => {
     if (!documentContent || !showSuggestions) return [];
-    return getKeywordSuggestions(documentContent).filter(
+    const basicSuggestions = getKeywordSuggestions(documentContent);
+    const advancedSuggestions = getAdvancedKeywordSuggestions(documentContent, {
+      existingKeywords: keywords.map(k => k.word)
+    });
+    
+    // Combine and deduplicate suggestions
+    const combined = [...basicSuggestions, ...advancedSuggestions.map(s => s.word)];
+    return [...new Set(combined)].filter(
       suggestion => !keywords.some(k => k.word.toLowerCase() === suggestion.toLowerCase())
     );
   }, [documentContent, keywords, showSuggestions]);
 
   // Memoize keywords array to prevent unnecessary re-renders
   const memoizedKeywords = useMemo(() => keywords, [keywords]);
+
+  const handleTemplateSelect = useCallback((template: DocumentTemplate) => {
+    template.keywords.forEach(keyword => {
+      const isDuplicate = keywords.some(k => 
+        k?.word?.toLowerCase() === keyword.toLowerCase()
+      );
+      
+      if (!isDuplicate) {
+        const randomIndex = Math.floor(Math.random() * colors.length);
+        onAddKeyword(keyword, colors[randomIndex] || colors[0]);
+      }
+    });
+    setShowTemplates(false);
+  }, [keywords, onAddKeyword]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -75,7 +102,6 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
       return;
     }
 
-    // Check for duplicates safely
     const isDuplicate = memoizedKeywords.some(k => 
       k?.word?.toLowerCase() === trimmedKeyword.toLowerCase()
     );
@@ -88,7 +114,6 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
     try {
       onAddKeyword(trimmedKeyword, selectedColor);
       setNewKeyword('');
-      // Use a safe random color selection
       const randomIndex = Math.floor(Math.random() * colors.length);
       setSelectedColor(colors[randomIndex] || colors[0]);
       toast.success(`Added keyword: ${trimmedKeyword}`);
@@ -154,6 +179,28 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
     toast.success(`Added ${category.name} keywords`);
   }, [keywords, onAddKeyword]);
 
+  if (showTemplates) {
+    return (
+      <DocumentTemplateSelector
+        onTemplateSelect={handleTemplateSelect}
+        onClose={() => setShowTemplates(false)}
+      />
+    );
+  }
+
+  if (showVersionHistory) {
+    return (
+      <DocumentVersionHistory
+        documentId={document?.id || null}
+        onVersionSelect={(version) => {
+          console.log('Selected version:', version);
+          setShowVersionHistory(false);
+        }}
+        onClose={() => setShowVersionHistory(false)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -185,6 +232,28 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
         <div className="flex items-center space-x-2">
           <Tag className="w-4 h-4 text-gray-500" />
           <span className="text-sm font-medium text-gray-700">Quick Add</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowTemplates(true)}
+            className="w-full text-left justify-start"
+            type="button"
+          >
+            <Template className="w-4 h-4 mr-2" />
+            Templates
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => setShowVersionHistory(true)}
+            className="w-full text-left justify-start"
+            type="button"
+          >
+            <History className="w-4 h-4 mr-2" />
+            Versions
+          </Button>
         </div>
         
         <Select value={selectedCategory} onValueChange={handleCategorySelect}>
@@ -290,7 +359,6 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
         <h4 className="text-sm font-medium text-gray-700">Active Keywords</h4>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {memoizedKeywords.map((keyword) => {
-            // Safety check to prevent crashes
             if (!keyword || !keyword.id) return null;
             
             return (
