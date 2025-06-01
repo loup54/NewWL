@@ -1,46 +1,68 @@
 
-import React from 'react';
-import { Wifi, WifiOff, Download } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Wifi, WifiOff, Cloud, CloudOff, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
-interface OfflineIndicatorProps {
-  isOnline: boolean;
-  hasOfflineDocuments?: boolean;
-}
+export const OfflineIndicator: React.FC = () => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [lastOnlineTime, setLastOnlineTime] = useState<Date | null>(null);
 
-export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
-  isOnline,
-  hasOfflineDocuments = false
-}) => {
-  if (isOnline && !hasOfflineDocuments) return null;
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success('Back online! Your data will sync automatically.', {
+        duration: 3000,
+        icon: <Wifi className="w-4 h-4" />
+      });
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setLastOnlineTime(new Date());
+      toast.warning('You\'re offline. Your work is being saved locally.', {
+        duration: 5000,
+        icon: <WifiOff className="w-4 h-4" />
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (isOnline) {
+    return (
+      <div className="fixed top-16 right-4 z-40">
+        <Badge 
+          variant="default" 
+          className="bg-green-100 text-green-800 border-green-200 shadow-sm"
+        >
+          <Cloud className="w-3 h-3 mr-1" />
+          Online
+        </Badge>
+      </div>
+    );
+  }
 
   return (
-    <Card className="fixed top-20 right-4 p-3 shadow-lg z-40 bg-white/90 backdrop-blur-sm border-gray-200">
-      <div className="flex items-center space-x-2">
-        {isOnline ? (
-          <>
-            <Wifi className="w-4 h-4 text-green-600" />
-            <Badge variant="outline" className="text-green-700 border-green-300">
-              Online
-            </Badge>
-          </>
-        ) : (
-          <>
-            <WifiOff className="w-4 h-4 text-orange-600" />
-            <Badge variant="outline" className="text-orange-700 border-orange-300">
-              Offline
-            </Badge>
-          </>
+    <div className="fixed top-16 right-4 z-40">
+      <Badge 
+        variant="secondary" 
+        className="bg-orange-100 text-orange-800 border-orange-200 shadow-lg animate-pulse"
+      >
+        <CloudOff className="w-3 h-3 mr-1" />
+        Offline Mode
+        {lastOnlineTime && (
+          <span className="ml-1 text-xs">
+            (since {lastOnlineTime.toLocaleTimeString()})
+          </span>
         )}
-        
-        {hasOfflineDocuments && (
-          <div className="flex items-center space-x-1 text-blue-600">
-            <Download className="w-3 h-3" />
-            <span className="text-xs font-medium">Saved</span>
-          </div>
-        )}
-      </div>
-    </Card>
+      </Badge>
+    </div>
   );
 };

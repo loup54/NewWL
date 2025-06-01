@@ -1,7 +1,8 @@
+
 import React, { useState, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
-import { DocumentViewer } from '@/components/DocumentViewer';
+import { OptimizedDocumentViewer } from '@/components/OptimizedDocumentViewer';
 import { KeywordManager } from '@/components/KeywordManager';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { EnhancedAnalyticsDashboard } from '@/components/EnhancedAnalyticsDashboard';
@@ -12,11 +13,19 @@ import { ExportScheduler } from '@/components/ExportScheduler';
 import { BatchExport } from '@/components/BatchExport';
 import { MobileDocumentViewer } from '@/components/MobileDocumentViewer';
 import { MobileKeywordManager } from '@/components/MobileKeywordManager';
+import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { OnboardingTour } from '@/components/OnboardingTour';
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
+import { PWAInstallBanner } from '@/components/PWAInstallBanner';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { useOfflineDocuments } from '@/hooks/useOfflineDocuments';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, FileText, Settings, Download, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface DocumentData {
   id: string;
@@ -36,6 +45,8 @@ export interface Keyword {
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const { isFirstVisit, showTour, completeOnboarding, completeTour } = useOnboarding();
+  const { saveDocumentOffline } = useOfflineDocuments();
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<DocumentData | null>(null);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
@@ -62,17 +73,22 @@ const Index = () => {
         if (!selectedDocument) {
           setSelectedDocument(newDocument);
         }
+
+        // Auto-save to offline storage
+        saveDocumentOffline(newDocument);
       };
       reader.readAsText(file);
     });
-  }, [selectedDocument]);
+  }, [selectedDocument, saveDocumentOffline]);
 
   const handleDocumentUpload = useCallback((document: DocumentData) => {
     setDocuments(prev => [...prev, document]);
     if (!selectedDocument) {
       setSelectedDocument(document);
     }
-  }, [selectedDocument]);
+    // Auto-save to offline storage
+    saveDocumentOffline(document);
+  }, [selectedDocument, saveDocumentOffline]);
 
   const handleAddKeyword = useCallback((word: string, color: string) => {
     const newKeyword: Keyword = {
@@ -95,7 +111,6 @@ const Index = () => {
       count: counts[keyword.word] || 0
     })));
     
-    // Update document-specific keyword counts
     if (selectedDocument) {
       setDocumentKeywordCounts(prev => ({
         ...prev,
@@ -104,10 +119,60 @@ const Index = () => {
     }
   }, [selectedDocument]);
 
+  // Keyboard shortcut handlers
+  const handleKeyboardAddKeyword = useCallback(() => {
+    // Focus keyword input or trigger add keyword modal
+    toast.info('Add keyword shortcut triggered');
+  }, []);
+
+  const handleKeyboardUploadDocument = useCallback(() => {
+    // Trigger file upload
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.txt,.md,.html,.rtf,.json';
+    fileInput.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (files) {
+        handleFileUpload(Array.from(files));
+      }
+    };
+    fileInput.click();
+  }, [handleFileUpload]);
+
+  const handleKeyboardExport = useCallback(() => {
+    if (selectedDocument) {
+      const blob = new Blob([selectedDocument.content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analyzed_${selectedDocument.filename}`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Document exported');
+    }
+  }, [selectedDocument]);
+
+  const handleKeyboardToggleHighlight = useCallback(() => {
+    setHighlightEnabled(prev => !prev);
+    toast.info(`Highlighting ${!highlightEnabled ? 'enabled' : 'disabled'}`);
+  }, [highlightEnabled]);
+
+  // Show welcome tutorial for first-time users
+  if (isFirstVisit) {
+    return (
+      <WelcomeTutorial
+        onStartTour={completeOnboarding}
+        onSkip={completeOnboarding}
+      />
+    );
+  }
+
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
+        <OfflineIndicator />
+        <PWAInstallBanner />
         <div className="p-4 space-y-4">
           {!selectedDocument ? (
             <FileUpload onDocumentUpload={handleDocumentUpload} />
@@ -154,6 +219,25 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <OfflineIndicator />
+      <PWAInstallBanner />
+      
+      {/* Onboarding Tour */}
+      {showTour && (
+        <OnboardingTour
+          isFirstVisit={false}
+          onComplete={completeTour}
+        />
+      )}
+
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcuts
+        onAddKeyword={handleKeyboardAddKeyword}
+        onUploadDocument={handleKeyboardUploadDocument}
+        onExport={handleKeyboardExport}
+        onToggleHighlight={handleKeyboardToggleHighlight}
+      />
+
       <div className="max-w-7xl mx-auto p-6">
         {documents.length === 0 ? (
           <div className="max-w-2xl mx-auto">
@@ -188,7 +272,7 @@ const Index = () => {
             <TabsContent value="analysis" className="mt-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                  <DocumentViewer
+                  <OptimizedDocumentViewer
                     document={selectedDocument}
                     keywords={keywords}
                     highlightEnabled={highlightEnabled}

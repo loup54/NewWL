@@ -1,130 +1,174 @@
 
-import React, { useState } from 'react';
-import { Folder, FileText, Trash2, Calendar, HardDrive } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { FileText, Trash2, Download, RefreshCw, WifiOff, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TouchOptimizedButton } from '@/components/TouchOptimizedButton';
 import { useOfflineDocuments } from '@/hooks/useOfflineDocuments';
 import { DocumentData } from '@/pages/Index';
-import { formatBytes } from '@/utils/fileTypeUtils';
+import { toast } from 'sonner';
 
 interface OfflineDocumentManagerProps {
-  onLoadDocument: (document: DocumentData) => void;
-  onClose: () => void;
+  onDocumentSelect: (document: DocumentData) => void;
 }
 
 export const OfflineDocumentManager: React.FC<OfflineDocumentManagerProps> = ({
-  onLoadDocument,
-  onClose
+  onDocumentSelect
 }) => {
-  const { 
-    offlineDocuments, 
-    isLoading, 
-    loadDocumentOffline, 
-    deleteDocumentOffline 
+  const {
+    offlineDocuments,
+    isLoading,
+    isOnline,
+    loadDocumentOffline,
+    deleteDocumentOffline,
+    refreshDocuments
   } = useOfflineDocuments();
-  const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const handleLoadDocument = async (id: string) => {
-    setLoadingId(id);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+
+  const handleDocumentClick = async (documentId: string) => {
     try {
-      const document = await loadDocumentOffline(id);
+      setSelectedDocumentId(documentId);
+      const document = await loadDocumentOffline(documentId);
+      
       if (document) {
-        onLoadDocument(document);
-        onClose();
+        onDocumentSelect(document);
+        toast.success('Document loaded from offline storage');
+      } else {
+        toast.error('Failed to load document');
       }
+    } catch (error) {
+      console.error('Error loading offline document:', error);
+      toast.error('Failed to load document');
     } finally {
-      setLoadingId(null);
+      setSelectedDocumentId(null);
     }
   };
 
-  const handleDeleteDocument = async (id: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (confirm('Are you sure you want to delete this document?')) {
-      await deleteDocumentOffline(id);
+  const handleDeleteDocument = async (documentId: string, filename: string) => {
+    if (window.confirm(`Are you sure you want to delete "${filename}"?`)) {
+      await deleteDocumentOffline(documentId);
+    }
+  };
+
+  const handleExportDocument = async (documentId: string) => {
+    try {
+      const document = await loadDocumentOffline(documentId);
+      if (document) {
+        const blob = new Blob([document.content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `offline_${document.filename}`;
+        window.document.body.appendChild(link);
+        link.click();
+        window.document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success('Document exported');
+      }
+    } catch (error) {
+      console.error('Error exporting document:', error);
+      toast.error('Failed to export document');
     }
   };
 
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading offline documents...</p>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <WifiOff className="w-5 h-5" />
+            <span>Offline Documents</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-500">Loading offline documents...</span>
+          </div>
+        </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-2">
-          <HardDrive className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold">Offline Documents</h3>
-          <Badge variant="outline">{offlineDocuments.length}</Badge>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center space-x-2">
+            <WifiOff className="w-5 h-5" />
+            <span>Offline Documents</span>
+            <Badge variant={isOnline ? "default" : "secondary"}>
+              {isOnline ? <Cloud className="w-3 h-3 mr-1" /> : <WifiOff className="w-3 h-3 mr-1" />}
+              {isOnline ? 'Online' : 'Offline'}
+            </Badge>
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshDocuments}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
-        <Button onClick={onClose} variant="ghost" size="sm">
-          Close
-        </Button>
-      </div>
-
-      {offlineDocuments.length === 0 ? (
-        <div className="text-center py-8">
-          <Folder className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No Offline Documents</h4>
-          <p className="text-gray-600">
-            Documents you upload will be automatically saved for offline access.
-          </p>
-        </div>
-      ) : (
-        <ScrollArea className="h-96">
-          <div className="space-y-3">
+      </CardHeader>
+      <CardContent>
+        {offlineDocuments.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-sm">No offline documents found</p>
+            <p className="text-xs mt-1">Documents are automatically saved for offline access</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
             {offlineDocuments.map((doc) => (
-              <Card 
+              <div
                 key={doc.id}
-                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors border border-gray-200"
-                onClick={() => handleLoadDocument(doc.id)}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3 flex-1 min-w-0">
-                    <FileText className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="font-medium text-gray-900 truncate">
+                <div 
+                  className="flex-1 cursor-pointer"
+                  onClick={() => handleDocumentClick(doc.id)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <FileText className="w-4 h-4 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
                         {doc.filename}
-                      </h4>
-                      <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{doc.uploadDate.toLocaleDateString()}</span>
-                        </div>
-                        <span>{formatBytes(doc.size)}</span>
-                      </div>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Saved: {doc.lastModified.toLocaleDateString()} • 
+                        {(doc.size / 1024).toFixed(1)} KB
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-2 flex-shrink-0">
-                    {loadingId === doc.id && (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    )}
-                    <TouchOptimizedButton
-                      onClick={(e) => handleDeleteDocument(doc.id, e)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                      touchTarget="small"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </TouchOptimizedButton>
-                  </div>
                 </div>
-              </Card>
+                
+                <div className="flex items-center space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleExportDocument(doc.id)}
+                    title="Export document"
+                  >
+                    <Download className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteDocument(doc.id, doc.filename)}
+                    className="text-red-500 hover:text-red-700"
+                    title="Delete document"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
             ))}
           </div>
-        </ScrollArea>
-      )}
+        )}
+      </CardContent>
     </Card>
   );
 };
