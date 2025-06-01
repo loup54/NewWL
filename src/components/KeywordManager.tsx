@@ -17,7 +17,7 @@ interface KeywordManagerProps {
 
 const colors = [
   '#fbbf24', '#34d399', '#60a5fa', '#f87171', '#a78bfa', 
-  '#fb7185', '#4ade80', '#38bdf8', '#fbbf24', '#818cf8'
+  '#fb7185', '#4ade80', '#38bdf8', '#fcd34d', '#818cf8'
 ];
 
 export const KeywordManager: React.FC<KeywordManagerProps> = ({
@@ -81,9 +81,9 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
               <span className="text-sm text-gray-600">Highlight Color</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {colors.map((color) => (
+              {colors.map((color, index) => (
                 <button
-                  key={color}
+                  key={`color-${index}-${color}`}
                   onClick={() => setSelectedColor(color)}
                   className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
                     selectedColor === color ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
