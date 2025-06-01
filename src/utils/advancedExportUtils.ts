@@ -182,7 +182,7 @@ export const generateExcelReport = (data: ExportData) => {
   const workbook = XLSX.utils.book_new();
 
   // Document Stats Sheet
-  const statsData = [
+  const statsData: string[][] = [
     ['Metric', 'Value'],
     ['Document Name', data.document.filename],
     ['Total Words', data.documentStats.totalWords.toString()],
@@ -197,7 +197,7 @@ export const generateExcelReport = (data: ExportData) => {
   XLSX.utils.book_append_sheet(workbook, statsSheet, 'Document Stats');
 
   // Keywords Sheet
-  const keywordData = [
+  const keywordData: string[][] = [
     ['Keyword', 'Count', 'Density %']
   ];
   data.keywords.forEach(keyword => {
@@ -210,7 +210,7 @@ export const generateExcelReport = (data: ExportData) => {
   XLSX.utils.book_append_sheet(workbook, keywordsSheet, 'Keywords');
 
   // Word Frequency Sheet
-  const wordFreqData = [['Word', 'Frequency']];
+  const wordFreqData: string[][] = [['Word', 'Frequency']];
   Object.entries(data.documentStats.wordFrequency)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 50)
@@ -233,7 +233,7 @@ export const generateComparisonReport = (
     const workbook = XLSX.utils.book_new();
 
     // Comparison Summary
-    const summaryData = [
+    const summaryData: string[][] = [
       ['Document', 'Total Words', 'Keyword Count', 'Keyword Density %']
     ];
     
@@ -250,9 +250,9 @@ export const generateComparisonReport = (
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
 
     // Detailed Comparison
-    const detailData = [['Keyword', ...documents.map(doc => doc.filename)]];
+    const detailData: string[][] = [['Keyword', ...documents.map(doc => doc.filename)]];
     keywords.forEach(keyword => {
-      const row: (string | number)[] = [keyword.word];
+      const row: string[] = [keyword.word];
       documents.forEach(doc => {
         row.push((keywordCounts[doc.filename]?.[keyword.word] || 0).toString());
       });

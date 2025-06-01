@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, forwardRef } from 'react';
 import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -284,7 +283,6 @@ export const KeywordManager = forwardRef<HTMLInputElement, KeywordManagerProps>(
           keywords={keywords}
           document={document}
           keywordCounts={keywordCounts}
-          documentStats={documentStats}
         />
       )}
 
