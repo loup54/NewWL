@@ -19,7 +19,7 @@ export const useSwipeGesture = (options: SwipeGestureOptions) => {
   } = options;
 
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const element = elementRef.current;

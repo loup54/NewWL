@@ -22,6 +22,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { PWAInstallBanner } from '@/components/PWAInstallBanner';
+import { DocumentSkeleton, KeywordManagerSkeleton } from '@/components/DocumentSkeleton';
+import { PageTransition, ScaleTransition } from '@/components/PageTransition';
+import { NoDocumentState, NoKeywordsState } from '@/components/EmptyStates';
+import { FileUploadError, ProcessingError } from '@/components/ErrorStates';
 
 export interface Keyword {
   id: string;
@@ -286,12 +290,27 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8 space-y-8">
         {isLoading ? (
-          <div className="max-w-4xl mx-auto">
-            <LoadingState type={loadingType} />
-          </div>
+          <PageTransition>
+            <div className="max-w-4xl mx-auto">
+              {isMobileView ? (
+                <div className="space-y-4">
+                  <DocumentSkeleton />
+                </div>
+              ) : (
+                <div className="grid lg:grid-cols-4 gap-8">
+                  <div className="lg:col-span-1">
+                    <KeywordManagerSkeleton />
+                  </div>
+                  <div className="lg:col-span-3">
+                    <DocumentSkeleton />
+                  </div>
+                </div>
+              )}
+            </div>
+          </PageTransition>
         ) : !document ? (
           <div className="max-w-4xl mx-auto">
-            <FadeTransition>
+            <PageTransition>
               <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
                   WordLens Insight Engine
@@ -302,38 +321,40 @@ const Index = () => {
                 </p>
               </div>
               
-              <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <FileUpload 
-                  onDocumentUpload={handleDocumentUpload} 
-                  ref={fileUploadRef}
-                />
-                
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Or compare multiple documents side by side
-                    </p>
-                    <FeatureTooltip
-                      title="Document Comparison"
-                      description="Upload multiple documents and compare keyword usage across them with detailed analytics."
-                    >
-                      <TouchOptimizedButton 
-                        onClick={handleEnterComparisonMode}
-                        variant="outline"
-                        className="bg-blue-50 hover:bg-blue-100"
-                        touchTarget="medium"
+              <ScaleTransition>
+                <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                  <FileUpload 
+                    onDocumentUpload={handleDocumentUpload} 
+                    ref={fileUploadRef}
+                  />
+                  
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-4">
+                        Or compare multiple documents side by side
+                      </p>
+                      <FeatureTooltip
+                        title="Document Comparison"
+                        description="Upload multiple documents and compare keyword usage across them with detailed analytics."
                       >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Compare Documents
-                      </TouchOptimizedButton>
-                    </FeatureTooltip>
+                        <TouchOptimizedButton 
+                          onClick={handleEnterComparisonMode}
+                          variant="outline"
+                          className="bg-blue-50 hover:bg-blue-100"
+                          touchTarget="medium"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Compare Documents
+                        </TouchOptimizedButton>
+                      </FeatureTooltip>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            </FadeTransition>
+                </Card>
+              </ScaleTransition>
+            </PageTransition>
           </div>
         ) : (
-          <FadeTransition>
+          <PageTransition>
             {isMobileView ? (
               // Mobile Layout
               <div className="space-y-4">
@@ -398,7 +419,7 @@ const Index = () => {
               // Desktop Layout
               <div className="grid lg:grid-cols-4 gap-8">
                 <div className="lg:col-span-1 space-y-6">
-                  <SuccessAnimation>
+                  <ScaleTransition>
                     <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-2">
@@ -433,7 +454,7 @@ const Index = () => {
                         ref={keywordInputRef}
                       />
                     </Card>
-                  </SuccessAnimation>
+                  </ScaleTransition>
                   
                   <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
                     <AnalyticsDashboard keywords={keywords} document={document} />
@@ -453,7 +474,7 @@ const Index = () => {
                 </div>
               </div>
             )}
-          </FadeTransition>
+          </PageTransition>
         )}
       </main>
 
