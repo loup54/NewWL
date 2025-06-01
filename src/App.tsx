@@ -5,6 +5,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
+console.log('Creating QueryClient...');
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -22,12 +23,14 @@ const queryClient = new QueryClient({
     },
   },
 });
+console.log('QueryClient created successfully');
 
 const App = () => {
-  console.log('App component rendering');
+  console.log('App component render start');
   
   try {
-    return (
+    console.log('Creating App JSX...');
+    const appJsx = (
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <Routes>
@@ -37,8 +40,15 @@ const App = () => {
         </QueryClientProvider>
       </ErrorBoundary>
     );
+    console.log('App JSX created, returning...');
+    return appJsx;
   } catch (error) {
-    console.error('Error in App component render:', error);
+    console.error('CRITICAL ERROR in App component:', error);
+    console.error('Error details:', {
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack
+    });
     throw error;
   }
 };

@@ -21,14 +21,15 @@ export interface Keyword {
 }
 
 const Index = () => {
-  console.log('Index component starting to render');
+  console.log('Index component render start');
   
   try {
+    console.log('Initializing state...');
     const [documents, setDocuments] = useState<DocumentData[]>([]);
+    console.log('State initialized successfully');
 
-    console.log('Index component state initialized, rendering UI');
-
-    return (
+    console.log('Starting JSX render...');
+    const jsx = (
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 py-4">
@@ -56,7 +57,7 @@ const Index = () => {
               <p className="text-gray-600 mb-4">
                 Your document analysis tool is loading. Upload a document to get started.
               </p>
-              <Button className="w-full">
+              <Button className="w-full" onClick={() => console.log('Button clicked')}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Document
               </Button>
@@ -65,8 +66,14 @@ const Index = () => {
         </div>
       </div>
     );
+    
+    console.log('JSX created successfully, returning...');
+    return jsx;
   } catch (error) {
-    console.error('Error in Index component:', error);
+    console.error('CRITICAL ERROR in Index component:', error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
     throw error;
   }
 };
