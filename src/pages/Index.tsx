@@ -13,7 +13,7 @@ import { ExportScheduler } from '@/components/ExportScheduler';
 import { BatchExport } from '@/components/BatchExport';
 import { MobileDocumentViewer } from '@/components/MobileDocumentViewer';
 import { MobileKeywordManager } from '@/components/MobileKeywordManager';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +36,7 @@ export interface Keyword {
 }
 
 const Index = () => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<DocumentData | null>(null);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
@@ -67,6 +67,13 @@ const Index = () => {
     });
   }, [selectedDocument]);
 
+  const handleDocumentUpload = useCallback((document: DocumentData) => {
+    setDocuments(prev => [...prev, document]);
+    if (!selectedDocument) {
+      setSelectedDocument(document);
+    }
+  }, [selectedDocument]);
+
   const handleAddKeyword = useCallback((word: string, color: string) => {
     const newKeyword: Keyword = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -95,7 +102,7 @@ const Index = () => {
         <Header />
         <div className="p-4 space-y-4">
           {!selectedDocument ? (
-            <FileUpload onFileUpload={handleFileUpload} />
+            <FileUpload onDocumentUpload={handleDocumentUpload} />
           ) : (
             <Tabs defaultValue="document" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -125,7 +132,7 @@ const Index = () => {
               </TabsContent>
               <TabsContent value="analytics">
                 <div className="space-y-4">
-                  <AnalyticsDashboard keywords={keywords} documents={documents} />
+                  <AnalyticsDashboard keywords={keywords} document={selectedDocument} />
                   <KeywordDensity keywords={keywords} document={selectedDocument} />
                 </div>
               </TabsContent>
@@ -142,7 +149,7 @@ const Index = () => {
       <div className="max-w-7xl mx-auto p-6">
         {documents.length === 0 ? (
           <div className="max-w-2xl mx-auto">
-            <FileUpload onFileUpload={handleFileUpload} />
+            <FileUpload onDocumentUpload={handleDocumentUpload} />
           </div>
         ) : (
           <Tabs defaultValue="analysis" className="w-full">
@@ -174,9 +181,7 @@ const Index = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <DocumentViewer
-                    documents={documents}
-                    selectedDocument={selectedDocument}
-                    onDocumentSelect={setSelectedDocument}
+                    document={selectedDocument}
                     keywords={keywords}
                     highlightEnabled={highlightEnabled}
                     caseSensitive={caseSensitive}
@@ -193,7 +198,7 @@ const Index = () => {
                     caseSensitive={caseSensitive}
                     onToggleCaseSensitive={setCaseSensitive}
                   />
-                  <FileUpload onFileUpload={handleFileUpload} />
+                  <FileUpload onDocumentUpload={handleDocumentUpload} />
                 </div>
               </div>
             </TabsContent>
@@ -214,11 +219,11 @@ const Index = () => {
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                       <div>
                         <h3 className="text-lg font-semibold mb-4">Standard Analytics</h3>
-                        <AnalyticsDashboard keywords={keywords} documents={documents} />
+                        <AnalyticsDashboard keywords={keywords} document={selectedDocument} />
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold mb-4">Enhanced Analytics</h3>
-                        <EnhancedAnalyticsDashboard keywords={keywords} documents={documents} />
+                        <EnhancedAnalyticsDashboard keywords={keywords} document={selectedDocument} />
                       </div>
                     </div>
                   </CardContent>
@@ -249,7 +254,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <DocumentComparison documents={documents} keywords={keywords} />
+                  <DocumentComparison documents={documents} keywords={keywords} keywordCounts={keywordCounts} />
                 </CardContent>
               </Card>
             </TabsContent>

@@ -51,9 +51,12 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
           }
 
           const document: DocumentData = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             content,
             filename: file.name,
-            uploadDate: new Date()
+            uploadDate: new Date(),
+            fileSize: file.size,
+            fileType: file.type || 'text/plain'
           };
           
           onDocumentUpload(document);
