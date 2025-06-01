@@ -1,10 +1,10 @@
-
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DocumentData } from '@/pages/Index';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 interface MultiDocumentUploadProps {
   documents: DocumentData[];
@@ -19,39 +19,83 @@ export const MultiDocumentUpload: React.FC<MultiDocumentUploadProps> = ({
   onDocumentRemove,
   maxDocuments = 3
 }) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const { handleFileError, handleError } = useErrorHandler();
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    if (documents.length >= maxDocuments) {
-      toast.error(`Maximum ${maxDocuments} documents allowed for comparison`);
-      return;
+    try {
+      if (documents.length >= maxDocuments) {
+        handleError({
+          code: 'MAX_DOCUMENTS_EXCEEDED',
+          message: `Maximum ${maxDocuments} documents allowed for comparison`,
+          details: 'Please remove a document before adding a new one.'
+        });
+        return;
+      }
+
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        handleFileError(file, 'size');
+        return;
+      }
+
+      if (file.size === 0) {
+        handleFileError(file, 'corrupted');
+        return;
+      }
+
+      const reader = new FileReader();
+      
+      const processFile = new Promise<void>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          reader.abort();
+          reject(new Error('File reading timeout'));
+        }, 30000);
+
+        reader.onload = (e) => {
+          clearTimeout(timeoutId);
+          try {
+            const content = e.target?.result as string;
+            
+            if (!content || content.trim().length === 0) {
+              handleFileError(file, 'corrupted');
+              reject(new Error('File appears to be empty'));
+              return;
+            }
+
+            const document: DocumentData = {
+              content,
+              filename: file.name,
+              uploadDate: new Date()
+            };
+            
+            onDocumentUpload(document);
+            toast.success(`Added ${file.name} for comparison`);
+            resolve();
+          } catch (error) {
+            clearTimeout(timeoutId);
+            handleFileError(file, 'read');
+            reject(error);
+          }
+        };
+
+        reader.onerror = () => {
+          clearTimeout(timeoutId);
+          handleFileError(file, 'read');
+          reject(new Error('Failed to read file'));
+        };
+
+        reader.readAsText(file);
+      });
+
+      await processFile;
+    } catch (error) {
+      console.error('Multi-document upload error:', error);
+      // Error already handled above
     }
-
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is 50MB.`);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      const document: DocumentData = {
-        content,
-        filename: file.name,
-        uploadDate: new Date()
-      };
-      onDocumentUpload(document);
-      toast.success(`Added ${file.name} for comparison`);
-    };
-
-    reader.onerror = () => {
-      toast.error('Failed to read file. Please try again.');
-    };
-
-    reader.readAsText(file);
-  }, [documents.length, maxDocuments, onDocumentUpload]);
+  }, [documents.length, maxDocuments, onDocumentUpload, handleFileError, handleError]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -64,7 +108,14 @@ export const MultiDocumentUpload: React.FC<MultiDocumentUploadProps> = ({
     },
     maxFiles: 1,
     maxSize: 50 * 1024 * 1024,
-    disabled: documents.length >= maxDocuments
+    disabled: documents.length >= maxDocuments,
+    onError: (error) => {
+      handleError({
+        code: 'DROPZONE_ERROR',
+        message: 'File upload failed',
+        details: error.message
+      });
+    }
   });
 
   return (

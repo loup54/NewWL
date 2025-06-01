@@ -1,57 +1,123 @@
+
 import React, { useCallback, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, FileX } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentData } from '@/pages/Index';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 interface FileUploadProps {
   onDocumentUpload: (document: DocumentData) => void;
 }
 
 export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDocumentUpload }, ref) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const { handleFileError, handleError } = useErrorHandler();
+
+  const validateFile = useCallback((file: File): boolean => {
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    
+    if (file.size > maxSize) {
+      handleFileError(file, 'size');
+      return false;
+    }
+
+    // Check if file appears to be corrupted (empty or suspiciously small for certain types)
+    if (file.size === 0) {
+      handleFileError(file, 'corrupted');
+      return false;
+    }
+
+    return true;
+  }, [handleFileError]);
+
+  const processFile = useCallback(async (file: File): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      const timeoutId = setTimeout(() => {
+        reader.abort();
+        reject(new Error('File reading timeout'));
+      }, 30000); // 30 second timeout
+
+      reader.onload = (e) => {
+        clearTimeout(timeoutId);
+        try {
+          const content = e.target?.result as string;
+          
+          if (!content || content.trim().length === 0) {
+            handleFileError(file, 'corrupted');
+            reject(new Error('File appears to be empty or corrupted'));
+            return;
+          }
+
+          const document: DocumentData = {
+            content,
+            filename: file.name,
+            uploadDate: new Date()
+          };
+          
+          onDocumentUpload(document);
+          toast.success(`Successfully uploaded ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+          resolve();
+        } catch (error) {
+          clearTimeout(timeoutId);
+          handleFileError(file, 'read');
+          reject(error);
+        }
+      };
+
+      reader.onerror = () => {
+        clearTimeout(timeoutId);
+        handleFileError(file, 'read');
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.onabort = () => {
+        clearTimeout(timeoutId);
+        handleError('File upload was cancelled');
+        reject(new Error('File upload cancelled'));
+      };
+
+      try {
+        reader.readAsText(file);
+      } catch (error) {
+        clearTimeout(timeoutId);
+        handleFileError(file, 'read');
+        reject(error);
+      }
+    });
+  }, [onDocumentUpload, handleFileError, handleError]);
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    // Enhanced file size validation
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is 50MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
-      return;
+    try {
+      if (!validateFile(file)) return;
+      await processFile(file);
+    } catch (error) {
+      console.error('File processing error:', error);
+      // Error already handled in processFile
     }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      const document: DocumentData = {
-        content,
-        filename: file.name,
-        uploadDate: new Date()
-      };
-      onDocumentUpload(document);
-      toast.success(`Successfully uploaded ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-    };
-
-    reader.onerror = () => {
-      toast.error('Failed to read file. Please try again.');
-    };
-
-    reader.readAsText(file);
-  }, [onDocumentUpload]);
+  }, [validateFile, processFile]);
 
   const onDropRejected = useCallback((rejectedFiles: any[]) => {
     const file = rejectedFiles[0];
     if (file) {
       const errors = file.errors;
       if (errors.some((error: any) => error.code === 'file-too-large')) {
-        toast.error(`File too large: ${file.file.name} (${(file.file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 50MB.`);
+        handleFileError(file.file, 'size');
       } else if (errors.some((error: any) => error.code === 'file-invalid-type')) {
-        toast.error(`Unsupported file type: ${file.file.name}. Please upload a supported document format.`);
+        handleFileError(file.file, 'type');
       } else {
-        toast.error(`Cannot upload ${file.file.name}. Please check the file and try again.`);
+        handleError({
+          code: 'FILE_UPLOAD_ERROR',
+          message: `Cannot upload ${file.file.name}`,
+          details: 'Please check the file and try again.'
+        });
       }
     }
-  }, []);
+  }, [handleFileError, handleError]);
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
@@ -81,7 +147,14 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
       'text/x-ini': ['.ini', '.cfg', '.conf']
     },
     maxFiles: 1,
-    maxSize: 50 * 1024 * 1024 // 50MB
+    maxSize: 50 * 1024 * 1024, // 50MB
+    onError: (error) => {
+      handleError({
+        code: 'DROPZONE_ERROR',
+        message: 'File upload failed',
+        details: error.message
+      });
+    }
   });
 
   const inputProps = getInputProps();
