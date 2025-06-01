@@ -5,6 +5,8 @@ import { KeywordManager } from '@/components/KeywordManager';
 import { DocumentViewer } from '@/components/DocumentViewer';
 import { MobileDocumentViewer } from '@/components/MobileDocumentViewer';
 import { MobileKeywordManager } from '@/components/MobileKeywordManager';
+import { EnhancedAnalyticsDashboard } from '@/components/EnhancedAnalyticsDashboard';
+import { calculateAdvancedStats } from '@/utils/advancedAnalytics';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { KeywordFilter } from '@/components/KeywordFilter';
 import { KeywordDensity } from '@/components/KeywordDensity';
@@ -61,6 +63,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<'upload' | 'processing' | 'export'>('upload');
   const [isMobileView, setIsMobileView] = useState(false);
+  const [documentStats, setDocumentStats] = useState<any>(null);
 
   const { isFirstVisit, showTour, completeOnboarding, completeTour } = useOnboarding();
   const keywordInputRef = useRef<HTMLInputElement>(null);
@@ -134,6 +137,16 @@ const Index = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Update document stats when document changes
+  useEffect(() => {
+    if (document?.content) {
+      const stats = calculateAdvancedStats(document.content);
+      setDocumentStats(stats);
+    } else {
+      setDocumentStats(null);
+    }
+  }, [document?.content]);
 
   const addKeyword = useCallback((word: string, color: string) => {
     if (!word?.trim() || !color) {
@@ -398,7 +411,7 @@ const Index = () => {
 
                   <TabsContent value="analytics">
                     <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                      <AnalyticsDashboard keywords={keywords} document={document} />
+                      <EnhancedAnalyticsDashboard keywords={keywords} document={document} />
                     </Card>
                   </TabsContent>
                 </Tabs>
@@ -457,7 +470,7 @@ const Index = () => {
                   </ScaleTransition>
                   
                   <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                    <AnalyticsDashboard keywords={keywords} document={document} />
+                    <EnhancedAnalyticsDashboard keywords={keywords} document={document} />
                   </Card>
                 </div>
                 

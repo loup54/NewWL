@@ -13,6 +13,7 @@ import {
   generateComparisonReport,
   ExportData 
 } from '@/utils/advancedExportUtils';
+import { calculateAdvancedStats } from '@/utils/advancedAnalytics';
 
 interface EnhancedExportOptionsProps {
   keywords: Keyword[];
@@ -65,16 +66,19 @@ export const EnhancedExportOptions: React.FC<EnhancedExportOptionsProps> = ({
       return;
     }
 
-    if (!document || !documentStats) {
+    if (!document) {
       toast.error('No document data available for export');
       return;
     }
+
+    // Calculate advanced stats if not provided
+    const advancedStats = documentStats || calculateAdvancedStats(document.content);
 
     const exportData: ExportData = {
       document,
       keywords,
       keywordCounts: keywordCounts as Record<string, number>,
-      documentStats
+      documentStats: advancedStats
     };
 
     try {
