@@ -1,4 +1,3 @@
-
 import React, { useCallback, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, FileX } from 'lucide-react';
@@ -88,17 +87,17 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
   const inputProps = getInputProps();
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gradient-to-br from-gray-50 to-blue-50 p-8 rounded-2xl border-2 border-dashed border-gray-200">
       <div
         {...getRootProps()}
         className={`
           relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer
-          transition-all duration-200 ease-in-out
+          transition-all duration-300 ease-in-out bg-white/60 backdrop-blur-sm
           ${isDragActive && !isDragReject
-            ? 'border-blue-400 bg-blue-50 scale-105'
+            ? 'border-blue-400 bg-blue-50 scale-105 shadow-lg'
             : isDragReject
-            ? 'border-red-400 bg-red-50'
-            : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/50'
+            ? 'border-red-400 bg-red-50 shadow-lg'
+            : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-md'
           }
         `}
       >
@@ -108,7 +107,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
           {isDragReject ? (
             <div className="space-y-3">
               <FileX className="w-16 h-16 text-red-400 mx-auto" />
-              <div className="bg-red-100 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              <div className="bg-red-100 border-2 border-red-200 rounded-lg p-4 text-sm text-red-700">
                 <div className="flex items-center space-x-2">
                   <AlertCircle className="w-4 h-4" />
                   <span className="font-medium">File not supported</span>
@@ -118,10 +117,14 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
             </div>
           ) : (
             <div className="relative">
-              <Upload className={`w-16 h-16 mx-auto transition-all duration-200 ${
-                isDragActive ? 'text-blue-500 scale-110' : 'text-gray-400'
-              }`} />
-              <FileText className="w-8 h-8 text-blue-500 absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-lg" />
+              <div className="p-4 bg-blue-50 rounded-full inline-block mb-4">
+                <Upload className={`w-16 h-16 mx-auto transition-all duration-200 ${
+                  isDragActive ? 'text-blue-500 scale-110' : 'text-blue-400'
+                }`} />
+              </div>
+              <div className="absolute -bottom-2 -right-2 p-2 bg-white rounded-full shadow-lg border-2 border-blue-200">
+                <FileText className="w-6 h-6 text-blue-500" />
+              </div>
             </div>
           )}
           
@@ -136,22 +139,22 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
               }
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500 mb-2">
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.txt</span>
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.html</span>
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.md</span>
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.rtf</span>
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.csv</span>
-              <span className="px-3 py-1 bg-gray-100 rounded-full">.json</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.txt</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.html</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.md</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.rtf</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.csv</span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-200">.json</span>
             </div>
             <div className="flex flex-wrap justify-center gap-2 text-sm text-gray-500">
-              <span className="px-3 py-1 bg-blue-50 rounded-full">.js/.ts</span>
-              <span className="px-3 py-1 bg-blue-50 rounded-full">.py</span>
-              <span className="px-3 py-1 bg-blue-50 rounded-full">.java</span>
-              <span className="px-3 py-1 bg-blue-50 rounded-full">.cpp</span>
-              <span className="px-3 py-1 bg-blue-50 rounded-full">.php</span>
-              <span className="px-3 py-1 bg-blue-50 rounded-full">& more</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">.js/.ts</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">.py</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">.java</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">.cpp</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">.php</span>
+              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full border border-purple-200">& more</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Maximum file size: 50MB</p>
+            <p className="text-xs text-gray-400 mt-3 bg-gray-100 px-3 py-1 rounded-full inline-block border">Maximum file size: 50MB</p>
           </div>
         </div>
       </div>

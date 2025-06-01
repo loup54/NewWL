@@ -38,60 +38,74 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Welcome to WordLens Insight Engine
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          The intelligent document analysis tool for tracking meaningful themes and generating professional insights.
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        {features.map((feature, index) => (
-          <Card key={index} className="p-6 hover:shadow-lg transition-all duration-200">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                {feature.icon}
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="p-8 text-center bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <div className="space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <Play className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Ready to get started?</h3>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="text-center mb-12">
+          <div className="inline-block p-3 bg-blue-100 rounded-full mb-6">
+            <FileText className="w-8 h-8 text-blue-600" />
           </div>
-          
-          <p className="text-gray-600 max-w-md mx-auto">
-            Take a quick interactive tour to learn how to use WordLens effectively, or jump right in and start analyzing!
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to WordLens Insight Engine
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            The intelligent document analysis tool for tracking meaningful themes and generating professional insights.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <Button onClick={onStartTour} className="bg-blue-600 hover:bg-blue-700">
-              <Play className="w-4 h-4 mr-2" />
-              Start Interactive Tour
-            </Button>
-            <Button variant="outline" onClick={onSkip}>
-              Skip Tour & Explore
-            </Button>
-          </div>
-          
-          <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-            <Badge variant="outline" className="text-xs">
-              💡 Tip: Press Ctrl+? anytime for keyboard shortcuts
-            </Badge>
-          </div>
         </div>
-      </Card>
+
+        <div className="grid md:grid-cols-2 gap-6 mb-10">
+          {features.map((feature, index) => (
+            <Card key={index} className="p-6 hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500 bg-white/80 backdrop-blur-sm">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 p-2 bg-gray-50 rounded-lg border">
+                  {feature.icon}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="p-8 text-center bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200/50 shadow-lg">
+          <div className="space-y-6">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Play className="w-5 h-5 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">Ready to get started?</h3>
+            </div>
+            
+            <p className="text-gray-700 max-w-md mx-auto leading-relaxed">
+              Take a quick interactive tour to learn how to use WordLens effectively, or jump right in and start analyzing!
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                onClick={onStartTour} 
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg border border-blue-300"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start Interactive Tour
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={onSkip}
+                className="border-2 border-gray-300 hover:bg-gray-50 shadow-sm"
+              >
+                Skip Tour & Explore
+              </Button>
+            </div>
+            
+            <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+              <Badge variant="outline" className="text-xs bg-white/60 border-gray-300">
+                💡 Tip: Press Ctrl+? anytime for keyboard shortcuts
+              </Badge>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
