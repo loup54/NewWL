@@ -3,6 +3,8 @@ import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
 import { KeywordManager } from '@/components/KeywordManager';
 import { DocumentViewer } from '@/components/DocumentViewer';
+import { MobileDocumentViewer } from '@/components/MobileDocumentViewer';
+import { MobileKeywordManager } from '@/components/MobileKeywordManager';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { KeywordFilter } from '@/components/KeywordFilter';
 import { KeywordDensity } from '@/components/KeywordDensity';
@@ -12,11 +14,12 @@ import { LoadingState, FadeTransition, SuccessAnimation } from '@/components/Loa
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 import { FeatureTooltip, HelpTooltip } from '@/components/ContextualTooltips';
+import { TouchOptimizedButton } from '@/components/TouchOptimizedButton';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText } from 'lucide-react';
+import { FileText, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { PWAInstallBanner } from '@/components/PWAInstallBanner';
 
@@ -53,7 +56,8 @@ const Index = () => {
   const [isComparisonMode, setIsComparisonMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<'upload' | 'processing' | 'export'>('upload');
-  
+  const [isMobileView, setIsMobileView] = useState(false);
+
   const { isFirstVisit, showTour, completeOnboarding, completeTour } = useOnboarding();
   const keywordInputRef = useRef<HTMLInputElement>(null);
   const fileUploadRef = useRef<HTMLInputElement>(null);
@@ -115,6 +119,17 @@ const Index = () => {
       console.error('Error saving case sensitive setting to localStorage:', error);
     }
   }, [caseSensitive]);
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const addKeyword = useCallback((word: string, color: string) => {
     if (!word?.trim() || !color) {
@@ -302,14 +317,15 @@ const Index = () => {
                       title="Document Comparison"
                       description="Upload multiple documents and compare keyword usage across them with detailed analytics."
                     >
-                      <Button 
+                      <TouchOptimizedButton 
                         onClick={handleEnterComparisonMode}
                         variant="outline"
                         className="bg-blue-50 hover:bg-blue-100"
+                        touchTarget="medium"
                       >
                         <FileText className="w-4 h-4 mr-2" />
                         Compare Documents
-                      </Button>
+                      </TouchOptimizedButton>
                     </FeatureTooltip>
                   </div>
                 </div>
@@ -318,31 +334,37 @@ const Index = () => {
           </div>
         ) : (
           <FadeTransition>
-            <div className="grid lg:grid-cols-4 gap-8">
-              <div className="lg:col-span-1 space-y-6">
-                <SuccessAnimation>
-                  <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-semibold">Analysis Mode</h3>
-                        <HelpTooltip content="Add keywords to track and analyze in your document. Use predefined categories or create custom ones." />
-                      </div>
-                      <FeatureTooltip
-                        title="Comparison Mode"
-                        description="Switch to comparison mode to analyze multiple documents side by side."
-                      >
-                        <Button 
-                          onClick={handleEnterComparisonMode}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <FileText className="w-4 h-4 mr-1" />
-                          Compare
-                        </Button>
-                      </FeatureTooltip>
-                    </div>
-                    
-                    <KeywordManager
+            {isMobileView ? (
+              // Mobile Layout
+              <div className="space-y-4">
+                <Tabs defaultValue="document" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="document" className="touch-manipulation">
+                      <FileText className="w-4 h-4 mr-1" />
+                      Document
+                    </TabsTrigger>
+                    <TabsTrigger value="keywords" className="touch-manipulation">
+                      Keywords
+                    </TabsTrigger>
+                    <TabsTrigger value="analytics" className="touch-manipulation">
+                      Analytics
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="document" className="h-[calc(100vh-200px)]">
+                    <Card className="h-full shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                      <MobileDocumentViewer
+                        document={document}
+                        keywords={keywords}
+                        highlightEnabled={highlightEnabled}
+                        caseSensitive={caseSensitive}
+                        onKeywordCountsUpdate={updateKeywordCounts}
+                      />
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="keywords">
+                    <MobileKeywordManager
                       keywords={keywords}
                       onAddKeyword={addKeyword}
                       onRemoveKeyword={removeKeyword}
@@ -350,30 +372,87 @@ const Index = () => {
                       onToggleHighlight={handleToggleHighlight}
                       caseSensitive={caseSensitive}
                       onToggleCaseSensitive={handleToggleCaseSensitive}
-                      documentContent={document.content}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="analytics">
+                    <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                      <AnalyticsDashboard keywords={keywords} document={document} />
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+
+                <div className="text-center">
+                  <TouchOptimizedButton 
+                    onClick={handleEnterComparisonMode}
+                    variant="outline"
+                    className="bg-blue-50 hover:bg-blue-100"
+                    touchTarget="medium"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Compare Documents
+                  </TouchOptimizedButton>
+                </div>
+              </div>
+            ) : (
+              // Desktop Layout
+              <div className="grid lg:grid-cols-4 gap-8">
+                <div className="lg:col-span-1 space-y-6">
+                  <SuccessAnimation>
+                    <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-lg font-semibold">Analysis Mode</h3>
+                          <HelpTooltip content="Add keywords to track and analyze in your document. Use predefined categories or create custom ones." />
+                        </div>
+                        <FeatureTooltip
+                          title="Comparison Mode"
+                          description="Switch to comparison mode to analyze multiple documents side by side."
+                        >
+                          <Button 
+                            onClick={handleEnterComparisonMode}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            Compare
+                          </Button>
+                        </FeatureTooltip>
+                      </div>
+                      
+                      <KeywordManager
+                        keywords={keywords}
+                        onAddKeyword={addKeyword}
+                        onRemoveKeyword={removeKeyword}
+                        highlightEnabled={highlightEnabled}
+                        onToggleHighlight={handleToggleHighlight}
+                        caseSensitive={caseSensitive}
+                        onToggleCaseSensitive={handleToggleCaseSensitive}
+                        documentContent={document.content}
+                        document={document}
+                        ref={keywordInputRef}
+                      />
+                    </Card>
+                  </SuccessAnimation>
+                  
+                  <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                    <AnalyticsDashboard keywords={keywords} document={document} />
+                  </Card>
+                </div>
+                
+                <div className="lg:col-span-3">
+                  <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                    <DocumentViewer
                       document={document}
-                      ref={keywordInputRef}
+                      keywords={keywords}
+                      highlightEnabled={highlightEnabled}
+                      caseSensitive={caseSensitive}
+                      onKeywordCountsUpdate={updateKeywordCounts}
                     />
                   </Card>
-                </SuccessAnimation>
-                
-                <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                  <AnalyticsDashboard keywords={keywords} document={document} />
-                </Card>
+                </div>
               </div>
-              
-              <div className="lg:col-span-3">
-                <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                  <DocumentViewer
-                    document={document}
-                    keywords={keywords}
-                    highlightEnabled={highlightEnabled}
-                    caseSensitive={caseSensitive}
-                    onKeywordCountsUpdate={updateKeywordCounts}
-                  />
-                </Card>
-              </div>
-            </div>
+            )}
           </FadeTransition>
         )}
       </main>
