@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
@@ -7,8 +6,11 @@ import { DocumentViewer } from '@/components/DocumentViewer';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { KeywordFilter } from '@/components/KeywordFilter';
 import { KeywordDensity } from '@/components/KeywordDensity';
+import { ComparisonMode } from '@/components/ComparisonMode';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText } from 'lucide-react';
 
 export interface Keyword {
   id: string;
@@ -40,6 +42,7 @@ const Index = () => {
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const [caseSensitive, setCaseSensitive] = useState(false);
+  const [isComparisonMode, setIsComparisonMode] = useState(false);
 
   // Load keywords and settings from localStorage on component mount
   useEffect(() => {
@@ -161,6 +164,28 @@ const Index = () => {
     setCaseSensitive(enabled);
   }, []);
 
+  const handleEnterComparisonMode = useCallback(() => {
+    setIsComparisonMode(true);
+  }, []);
+
+  const handleExitComparisonMode = useCallback(() => {
+    setIsComparisonMode(false);
+  }, []);
+
+  if (isComparisonMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <ComparisonMode 
+            onBack={handleExitComparisonMode}
+            initialKeywords={keywords}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Header />
@@ -180,12 +205,40 @@ const Index = () => {
             
             <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <FileUpload onDocumentUpload={handleDocumentUpload} />
+              
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Or compare multiple documents side by side
+                  </p>
+                  <Button 
+                    onClick={handleEnterComparisonMode}
+                    variant="outline"
+                    className="bg-blue-50 hover:bg-blue-100"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Compare Documents
+                  </Button>
+                </div>
+              </div>
             </Card>
           </div>
         ) : (
           <div className="grid lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1 space-y-6">
               <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Analysis Mode</h3>
+                  <Button 
+                    onClick={handleEnterComparisonMode}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <FileText className="w-4 h-4 mr-1" />
+                    Compare
+                  </Button>
+                </div>
+                
                 <KeywordManager
                   keywords={keywords}
                   onAddKeyword={addKeyword}
