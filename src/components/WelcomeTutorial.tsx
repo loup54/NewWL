@@ -23,7 +23,7 @@ export const WelcomeTutorial: React.FC<WelcomeTutorialProps> = ({
     {
       icon: <Target className="w-6 h-6 text-green-500" />,
       title: 'Smart Keyword Tracking',
-      description: 'Track respect, inclusion, diversity, and custom keywords with visual highlighting'
+      description: 'Track any custom keywords with visual highlighting'
     },
     {
       icon: <BarChart className="w-6 h-6 text-purple-500" />,
