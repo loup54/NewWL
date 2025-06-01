@@ -56,105 +56,148 @@ const Index = () => {
   const [documentKeywordCounts, setDocumentKeywordCounts] = useState<Record<string, Record<string, number>>>({});
 
   const handleFileUpload = useCallback((files: File[]) => {
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        const newDocument: DocumentData = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          filename: file.name,
-          content: content,
-          uploadDate: new Date(),
-          fileSize: file.size,
-          fileType: file.type
-        };
-        
-        setDocuments(prev => [...prev, newDocument]);
-        if (!selectedDocument) {
-          setSelectedDocument(newDocument);
-        }
+    try {
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const content = e.target?.result as string;
+            const newDocument: DocumentData = {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              filename: file.name,
+              content: content,
+              uploadDate: new Date(),
+              fileSize: file.size,
+              fileType: file.type
+            };
+            
+            setDocuments(prev => [...prev, newDocument]);
+            if (!selectedDocument) {
+              setSelectedDocument(newDocument);
+            }
 
-        // Auto-save to offline storage
-        saveDocumentOffline(newDocument);
-      };
-      reader.readAsText(file);
-    });
+            // Auto-save to offline storage
+            saveDocumentOffline(newDocument);
+          } catch (error) {
+            console.error('Error processing file:', error);
+            toast.error('Error processing file');
+          }
+        };
+        reader.readAsText(file);
+      });
+    } catch (error) {
+      console.error('Error handling file upload:', error);
+      toast.error('Error uploading file');
+    }
   }, [selectedDocument, saveDocumentOffline]);
 
   const handleDocumentUpload = useCallback((document: DocumentData) => {
-    setDocuments(prev => [...prev, document]);
-    if (!selectedDocument) {
-      setSelectedDocument(document);
+    try {
+      setDocuments(prev => [...prev, document]);
+      if (!selectedDocument) {
+        setSelectedDocument(document);
+      }
+      // Auto-save to offline storage
+      saveDocumentOffline(document);
+    } catch (error) {
+      console.error('Error handling document upload:', error);
+      toast.error('Error uploading document');
     }
-    // Auto-save to offline storage
-    saveDocumentOffline(document);
   }, [selectedDocument, saveDocumentOffline]);
 
   const handleAddKeyword = useCallback((word: string, color: string) => {
-    const newKeyword: Keyword = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      word,
-      color,
-      count: 0
-    };
-    setKeywords(prev => [...prev, newKeyword]);
+    try {
+      const newKeyword: Keyword = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        word,
+        color,
+        count: 0
+      };
+      setKeywords(prev => [...prev, newKeyword]);
+    } catch (error) {
+      console.error('Error adding keyword:', error);
+      toast.error('Error adding keyword');
+    }
   }, []);
 
   const handleRemoveKeyword = useCallback((id: string) => {
-    setKeywords(prev => prev.filter(k => k.id !== id));
+    try {
+      setKeywords(prev => prev.filter(k => k.id !== id));
+    } catch (error) {
+      console.error('Error removing keyword:', error);
+      toast.error('Error removing keyword');
+    }
   }, []);
 
   const handleKeywordCountsUpdate = useCallback((counts: Record<string, number>) => {
-    setKeywordCounts(counts);
-    setKeywords(prev => prev.map(keyword => ({
-      ...keyword,
-      count: counts[keyword.word] || 0
-    })));
-    
-    if (selectedDocument) {
-      setDocumentKeywordCounts(prev => ({
-        ...prev,
-        [selectedDocument.id]: counts
-      }));
+    try {
+      setKeywordCounts(counts);
+      setKeywords(prev => prev.map(keyword => ({
+        ...keyword,
+        count: counts[keyword.word] || 0
+      })));
+      
+      if (selectedDocument) {
+        setDocumentKeywordCounts(prev => ({
+          ...prev,
+          [selectedDocument.id]: counts
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating keyword counts:', error);
     }
   }, [selectedDocument]);
 
   // Keyboard shortcut handlers
   const handleKeyboardAddKeyword = useCallback(() => {
-    // Focus keyword input or trigger add keyword modal
     toast.info('Add keyword shortcut triggered');
   }, []);
 
   const handleKeyboardUploadDocument = useCallback(() => {
-    // Trigger file upload
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.txt,.md,.html,.rtf,.json';
-    fileInput.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (files) {
-        handleFileUpload(Array.from(files));
-      }
-    };
-    fileInput.click();
+    try {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.txt,.md,.html,.rtf,.json';
+      fileInput.onchange = (e) => {
+        const files = (e.target as HTMLInputElement).files;
+        if (files) {
+          handleFileUpload(Array.from(files));
+        }
+      };
+      fileInput.click();
+    } catch (error) {
+      console.error('Error with keyboard upload:', error);
+      toast.error('Error opening file dialog');
+    }
   }, [handleFileUpload]);
 
   const handleKeyboardExport = useCallback(() => {
-    if (selectedDocument) {
-      const blob = new Blob([selectedDocument.content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `analyzed_${selectedDocument.filename}`;
-      link.click();
-      URL.revokeObjectURL(url);
-      toast.success('Document exported');
+    try {
+      if (selectedDocument) {
+        const blob = new Blob([selectedDocument.content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `analyzed_${selectedDocument.filename}`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast.success('Document exported');
+      } else {
+        toast.error('No document selected for export');
+      }
+    } catch (error) {
+      console.error('Error exporting document:', error);
+      toast.error('Error exporting document');
     }
   }, [selectedDocument]);
 
   const handleKeyboardToggleHighlight = useCallback(() => {
-    setHighlightEnabled(prev => !prev);
-    toast.info(`Highlighting ${!highlightEnabled ? 'enabled' : 'disabled'}`);
+    try {
+      setHighlightEnabled(prev => !prev);
+      toast.info(`Highlighting ${!highlightEnabled ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error toggling highlight:', error);
+    }
   }, [highlightEnabled]);
 
   // Show welcome tutorial for first-time users
