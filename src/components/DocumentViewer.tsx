@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
-import { FileText, Calendar, Download } from 'lucide-react';
+import { FileText, Calendar, Download, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Keyword, DocumentData } from '@/pages/Index';
 
@@ -10,6 +9,53 @@ interface DocumentViewerProps {
   highlightEnabled: boolean;
   onKeywordCountsUpdate: (counts: Record<string, number>) => void;
 }
+
+const getFileType = (filename: string): { type: string; icon: string } => {
+  const extension = filename.toLowerCase().split('.').pop() || '';
+  
+  const fileTypes: Record<string, { type: string; icon: string }> = {
+    'txt': { type: 'Plain Text', icon: '📄' },
+    'html': { type: 'HTML Document', icon: '🌐' },
+    'htm': { type: 'HTML Document', icon: '🌐' },
+    'md': { type: 'Markdown', icon: '📝' },
+    'markdown': { type: 'Markdown', icon: '📝' },
+    'rtf': { type: 'Rich Text Format', icon: '📄' },
+    'csv': { type: 'CSV Data', icon: '📊' },
+    'json': { type: 'JSON Data', icon: '🔧' },
+    'xml': { type: 'XML Document', icon: '📋' },
+    'js': { type: 'JavaScript', icon: '⚡' },
+    'jsx': { type: 'React JavaScript', icon: '⚛️' },
+    'ts': { type: 'TypeScript', icon: '🔷' },
+    'tsx': { type: 'React TypeScript', icon: '⚛️' },
+    'py': { type: 'Python', icon: '🐍' },
+    'java': { type: 'Java', icon: '☕' },
+    'cpp': { type: 'C++', icon: '⚙️' },
+    'c': { type: 'C', icon: '⚙️' },
+    'css': { type: 'CSS Stylesheet', icon: '🎨' },
+    'php': { type: 'PHP', icon: '🐘' },
+    'rb': { type: 'Ruby', icon: '💎' },
+    'go': { type: 'Go', icon: '🚀' },
+    'rs': { type: 'Rust', icon: '🦀' },
+    'yml': { type: 'YAML Config', icon: '⚙️' },
+    'yaml': { type: 'YAML Config', icon: '⚙️' },
+    'log': { type: 'Log File', icon: '📜' },
+    'ini': { type: 'Config File', icon: '⚙️' },
+    'cfg': { type: 'Config File', icon: '⚙️' },
+    'conf': { type: 'Config File', icon: '⚙️' }
+  };
+
+  return fileTypes[extension] || { type: 'Text Document', icon: '📄' };
+};
+
+const getDocumentStats = (content: string) => {
+  if (!content) return { characters: 0, words: 0, lines: 0 };
+  
+  const characters = content.length;
+  const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const lines = content.split('\n').length;
+  
+  return { characters, words, lines };
+};
 
 const cleanRTFContent = (content: string): string => {
   if (!content) return '';
@@ -206,6 +252,9 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     return <div>No document loaded</div>;
   }
 
+  const fileType = getFileType(document.filename || '');
+  const stats = getDocumentStats(document.content || '');
+
   return (
     <div className="h-full flex flex-col">
       <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -221,7 +270,10 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
                   <Calendar className="w-4 h-4" />
                   <span>{document.uploadDate?.toLocaleDateString() || 'Unknown date'}</span>
                 </div>
-                <span>{(document.content?.length || 0).toLocaleString()} characters</span>
+                <div className="flex items-center space-x-1">
+                  <span>{fileType.icon}</span>
+                  <span>{fileType.type}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -235,6 +287,17 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
             <Download className="w-4 h-4" />
             <span>Export</span>
           </Button>
+        </div>
+        
+        {/* Document Stats */}
+        <div className="mt-4 flex items-center space-x-6 text-sm text-gray-600 bg-white/60 backdrop-blur-sm rounded-lg p-3">
+          <div className="flex items-center space-x-1">
+            <Info className="w-4 h-4" />
+            <span className="font-medium">Document Stats:</span>
+          </div>
+          <span>{stats.characters.toLocaleString()} characters</span>
+          <span>{stats.words.toLocaleString()} words</span>
+          <span>{stats.lines.toLocaleString()} lines</span>
         </div>
       </div>
 

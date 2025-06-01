@@ -1,7 +1,7 @@
 
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle, FileX } from 'lucide-react';
 import { toast } from 'sonner';
 import { DocumentData } from '@/pages/Index';
 
@@ -14,6 +14,13 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
+    // Enhanced file size validation
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      toast.error(`File too large. Maximum size is 50MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
@@ -23,13 +30,33 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
         uploadDate: new Date()
       };
       onDocumentUpload(document);
-      toast.success(`Successfully uploaded ${file.name}`);
+      toast.success(`Successfully uploaded ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
     };
+
+    reader.onerror = () => {
+      toast.error('Failed to read file. Please try again.');
+    };
+
     reader.readAsText(file);
   }, [onDocumentUpload]);
 
+  const onDropRejected = useCallback((rejectedFiles: any[]) => {
+    const file = rejectedFiles[0];
+    if (file) {
+      const errors = file.errors;
+      if (errors.some((error: any) => error.code === 'file-too-large')) {
+        toast.error(`File too large: ${file.file.name} (${(file.file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 50MB.`);
+      } else if (errors.some((error: any) => error.code === 'file-invalid-type')) {
+        toast.error(`Unsupported file type: ${file.file.name}. Please upload a supported document format.`);
+      } else {
+        toast.error(`Cannot upload ${file.file.name}. Please check the file and try again.`);
+      }
+    }
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: {
       'text/plain': ['.txt'],
       'text/html': ['.html', '.htm'],
@@ -77,7 +104,16 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDocumentUpload }) => {
         
         <div className="space-y-4">
           {isDragReject ? (
-            <AlertCircle className="w-16 h-16 text-red-400 mx-auto" />
+            <div className="space-y-3">
+              <FileX className="w-16 h-16 text-red-400 mx-auto" />
+              <div className="bg-red-100 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="font-medium">File not supported</span>
+                </div>
+                <p className="mt-1">Please upload a supported document format (see list below)</p>
+              </div>
+            </div>
           ) : (
             <div className="relative">
               <Upload className={`w-16 h-16 mx-auto transition-all duration-200 ${
