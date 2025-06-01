@@ -85,6 +85,8 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
     maxSize: 50 * 1024 * 1024 // 50MB
   });
 
+  const inputProps = getInputProps();
+
   return (
     <div className="w-full">
       <div
@@ -100,7 +102,7 @@ export const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(({ onDoc
           }
         `}
       >
-        <input {...getInputProps()} ref={ref} />
+        <input {...inputProps} ref={ref} />
         
         <div className="space-y-4">
           {isDragReject ? (
