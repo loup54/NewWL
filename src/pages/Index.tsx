@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
 import { KeywordManager } from '@/components/KeywordManager';
@@ -7,10 +7,17 @@ import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { KeywordFilter } from '@/components/KeywordFilter';
 import { KeywordDensity } from '@/components/KeywordDensity';
 import { ComparisonMode } from '@/components/ComparisonMode';
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
+import { LoadingState, FadeTransition, SuccessAnimation } from '@/components/LoadingStates';
+import { OnboardingTour } from '@/components/OnboardingTour';
+import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { FeatureTooltip, HelpTooltip } from '@/components/ContextualTooltips';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface Keyword {
   id: string;
@@ -43,6 +50,12 @@ const Index = () => {
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [isComparisonMode, setIsComparisonMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState<'upload' | 'processing' | 'export'>('upload');
+  
+  const { isFirstVisit, showTour, completeOnboarding, completeTour } = useOnboarding();
+  const keywordInputRef = useRef<HTMLInputElement>(null);
+  const fileUploadRef = useRef<HTMLInputElement>(null);
 
   // Load keywords and settings from localStorage on component mount
   useEffect(() => {
@@ -116,11 +129,12 @@ const Index = () => {
     };
 
     setKeywords(prevKeywords => {
-      // Prevent duplicates
       const isDuplicate = prevKeywords.some(k => k.word === newKeyword.word);
       if (isDuplicate) {
+        toast.error('Keyword already exists');
         return prevKeywords;
       }
+      toast.success(`Added keyword: ${newKeyword.word}`);
       return [...prevKeywords, newKeyword];
     });
   }, []);
@@ -148,17 +162,45 @@ const Index = () => {
     );
   }, []);
 
-  const handleDocumentUpload = useCallback((newDocument: DocumentData) => {
+  const handleDocumentUpload = useCallback(async (newDocument: DocumentData) => {
     if (!newDocument || !newDocument.content) {
       console.error('Invalid document provided');
       return;
     }
+    
+    setIsLoading(true);
+    setLoadingType('processing');
+    
+    // Simulate processing time for better UX
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     setDocument(newDocument);
+    setIsLoading(false);
+    toast.success(`Document "${newDocument.filename}" loaded successfully!`);
   }, []);
 
-  const handleToggleHighlight = useCallback((enabled: boolean) => {
-    setHighlightEnabled(enabled);
+  // Keyboard shortcut handlers
+  const handleAddKeywordShortcut = useCallback(() => {
+    keywordInputRef.current?.focus();
   }, []);
+
+  const handleUploadShortcut = useCallback(() => {
+    fileUploadRef.current?.click();
+  }, []);
+
+  const handleExportShortcut = useCallback(() => {
+    if (document && keywords.length > 0) {
+      toast.info('Export options available in the sidebar');
+    } else {
+      toast.error('Upload a document and add keywords first');
+    }
+  }, [document, keywords]);
+
+  const handleToggleHighlight = useCallback((enabled?: boolean) => {
+    const newValue = enabled !== undefined ? enabled : !highlightEnabled;
+    setHighlightEnabled(newValue);
+    toast.success(`Highlighting ${newValue ? 'enabled' : 'disabled'}`);
+  }, [highlightEnabled]);
 
   const handleToggleCaseSensitive = useCallback((enabled: boolean) => {
     setCaseSensitive(enabled);
@@ -172,16 +214,52 @@ const Index = () => {
     setIsComparisonMode(false);
   }, []);
 
+  const handleStartTour = useCallback(() => {
+    completeOnboarding();
+  }, [completeOnboarding]);
+
+  const handleSkipTour = useCallback(() => {
+    completeOnboarding();
+    completeTour();
+  }, [completeOnboarding, completeTour]);
+
   if (isComparisonMode) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <ComparisonMode 
-            onBack={handleExitComparisonMode}
-            initialKeywords={keywords}
+          <FadeTransition>
+            <ComparisonMode 
+              onBack={handleExitComparisonMode}
+              initialKeywords={keywords}
+            />
+          </FadeTransition>
+        </main>
+        <KeyboardShortcuts
+          onAddKeyword={handleAddKeywordShortcut}
+          onUploadDocument={handleUploadShortcut}
+          onExport={handleExportShortcut}
+          onToggleHighlight={() => handleToggleHighlight()}
+        />
+      </div>
+    );
+  }
+
+  // Show welcome tutorial for first-time visitors
+  if (isFirstVisit) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <WelcomeTutorial 
+            onStartTour={handleStartTour}
+            onSkip={handleSkipTour}
           />
         </main>
+        <OnboardingTour
+          isFirstVisit={showTour}
+          onComplete={completeTour}
+        />
       </div>
     );
   }
@@ -191,86 +269,125 @@ const Index = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {!document ? (
+        {isLoading ? (
           <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                WordLens Insight Engine
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Analyze documents for meaningful themes like respect, inclusion, and diversity. 
-                Upload your document to get started with intelligent keyword tracking and analytics.
-              </p>
-            </div>
-            
-            <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <FileUpload onDocumentUpload={handleDocumentUpload} />
-              
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-4">
-                    Or compare multiple documents side by side
-                  </p>
-                  <Button 
-                    onClick={handleEnterComparisonMode}
-                    variant="outline"
-                    className="bg-blue-50 hover:bg-blue-100"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Compare Documents
-                  </Button>
-                </div>
+            <LoadingState type={loadingType} />
+          </div>
+        ) : !document ? (
+          <div className="max-w-4xl mx-auto">
+            <FadeTransition>
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  WordLens Insight Engine
+                </h1>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Analyze documents for meaningful themes like respect, inclusion, and diversity. 
+                  Upload your document to get started with intelligent keyword tracking and analytics.
+                </p>
               </div>
-            </Card>
+              
+              <Card className="p-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <FileUpload 
+                  onDocumentUpload={handleDocumentUpload} 
+                  ref={fileUploadRef}
+                />
+                
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Or compare multiple documents side by side
+                    </p>
+                    <FeatureTooltip
+                      title="Document Comparison"
+                      description="Upload multiple documents and compare keyword usage across them with detailed analytics."
+                    >
+                      <Button 
+                        onClick={handleEnterComparisonMode}
+                        variant="outline"
+                        className="bg-blue-50 hover:bg-blue-100"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Compare Documents
+                      </Button>
+                    </FeatureTooltip>
+                  </div>
+                </div>
+              </Card>
+            </FadeTransition>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-1 space-y-6">
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Analysis Mode</h3>
-                  <Button 
-                    onClick={handleEnterComparisonMode}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <FileText className="w-4 h-4 mr-1" />
-                    Compare
-                  </Button>
-                </div>
+          <FadeTransition>
+            <div className="grid lg:grid-cols-4 gap-8">
+              <div className="lg:col-span-1 space-y-6">
+                <SuccessAnimation>
+                  <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-semibold">Analysis Mode</h3>
+                        <HelpTooltip content="Add keywords to track and analyze in your document. Use predefined categories or create custom ones." />
+                      </div>
+                      <FeatureTooltip
+                        title="Comparison Mode"
+                        description="Switch to comparison mode to analyze multiple documents side by side."
+                      >
+                        <Button 
+                          onClick={handleEnterComparisonMode}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          Compare
+                        </Button>
+                      </FeatureTooltip>
+                    </div>
+                    
+                    <KeywordManager
+                      keywords={keywords}
+                      onAddKeyword={addKeyword}
+                      onRemoveKeyword={removeKeyword}
+                      highlightEnabled={highlightEnabled}
+                      onToggleHighlight={handleToggleHighlight}
+                      caseSensitive={caseSensitive}
+                      onToggleCaseSensitive={handleToggleCaseSensitive}
+                      documentContent={document.content}
+                      document={document}
+                      ref={keywordInputRef}
+                    />
+                  </Card>
+                </SuccessAnimation>
                 
-                <KeywordManager
-                  keywords={keywords}
-                  onAddKeyword={addKeyword}
-                  onRemoveKeyword={removeKeyword}
-                  highlightEnabled={highlightEnabled}
-                  onToggleHighlight={handleToggleHighlight}
-                  caseSensitive={caseSensitive}
-                  onToggleCaseSensitive={handleToggleCaseSensitive}
-                  documentContent={document.content}
-                  document={document}
-                />
-              </Card>
+                <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                  <AnalyticsDashboard keywords={keywords} document={document} />
+                </Card>
+              </div>
               
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <AnalyticsDashboard keywords={keywords} document={document} />
-              </Card>
+              <div className="lg:col-span-3">
+                <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                  <DocumentViewer
+                    document={document}
+                    keywords={keywords}
+                    highlightEnabled={highlightEnabled}
+                    caseSensitive={caseSensitive}
+                    onKeywordCountsUpdate={updateKeywordCounts}
+                  />
+                </Card>
+              </div>
             </div>
-            
-            <div className="lg:col-span-3">
-              <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                <DocumentViewer
-                  document={document}
-                  keywords={keywords}
-                  highlightEnabled={highlightEnabled}
-                  caseSensitive={caseSensitive}
-                  onKeywordCountsUpdate={updateKeywordCounts}
-                />
-              </Card>
-            </div>
-          </div>
+          </FadeTransition>
         )}
       </main>
+
+      <KeyboardShortcuts
+        onAddKeyword={handleAddKeywordShortcut}
+        onUploadDocument={handleUploadShortcut}
+        onExport={handleExportShortcut}
+        onToggleHighlight={() => handleToggleHighlight()}
+      />
+
+      <OnboardingTour
+        isFirstVisit={showTour}
+        onComplete={completeTour}
+      />
     </div>
   );
 };
