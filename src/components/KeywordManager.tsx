@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
 import { Plus, X, Eye, EyeOff, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,13 +31,14 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
   const [selectedColor, setSelectedColor] = useState(colors[0]);
 
   console.log('KeywordManager render - newKeyword:', newKeyword);
+  console.log('KeywordManager render - keywords length:', keywords.length);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('Input change event:', e.target.value);
     setNewKeyword(e.target.value);
-  };
+  }, []);
 
-  const handleAddKeyword = () => {
+  const handleAddKeyword = useCallback(() => {
     if (!newKeyword.trim()) {
       toast.error('Please enter a keyword');
       return;
@@ -51,19 +53,24 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
     setNewKeyword('');
     setSelectedColor(colors[Math.floor(Math.random() * colors.length)]);
     toast.success(`Added keyword: ${newKeyword}`);
-  };
+  }, [newKeyword, selectedColor, keywords, onAddKeyword]);
 
-  const handleRemoveKeyword = (id: string, word: string) => {
+  const handleRemoveKeyword = useCallback((id: string, word: string) => {
     onRemoveKeyword(id);
     toast.success(`Removed keyword: ${word}`);
-  };
+  }, [onRemoveKeyword]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     console.log('Key down event:', e.key);
     if (e.key === 'Enter') {
       handleAddKeyword();
     }
-  };
+  }, [handleAddKeyword]);
+
+  const handleColorSelect = useCallback((color: string) => {
+    console.log('Color selected:', color);
+    setSelectedColor(color);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -97,8 +104,8 @@ export const KeywordManager: React.FC<KeywordManagerProps> = ({
             <div className="flex flex-wrap gap-2">
               {colors.map((color, index) => (
                 <button
-                  key={`color-${index}-${color}`}
-                  onClick={() => setSelectedColor(color)}
+                  key={`color-${index}`}
+                  onClick={() => handleColorSelect(color)}
                   className={`w-6 h-6 rounded-full border-2 transition-all duration-200 hover:scale-110 ${
                     selectedColor === color ? 'border-gray-800 ring-2 ring-gray-300' : 'border-gray-300'
                   }`}
