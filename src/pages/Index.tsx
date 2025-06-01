@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { FileUpload } from '@/components/FileUpload';
 import { KeywordManager } from '@/components/KeywordManager';
@@ -21,15 +21,65 @@ export interface DocumentData {
   uploadDate: Date;
 }
 
+const STORAGE_KEYS = {
+  KEYWORDS: 'wordlens-keywords',
+  HIGHLIGHT_ENABLED: 'wordlens-highlight-enabled'
+};
+
+const DEFAULT_KEYWORDS: Keyword[] = [
+  { id: '1', word: 'respect', color: '#fbbf24', count: 0 },
+  { id: '2', word: 'inclusion', color: '#34d399', count: 0 },
+  { id: '3', word: 'diversity', color: '#60a5fa', count: 0 },
+];
+
 const Index = () => {
-  const [keywords, setKeywords] = useState<Keyword[]>([
-    { id: '1', word: 'respect', color: '#fbbf24', count: 0 },
-    { id: '2', word: 'inclusion', color: '#34d399', count: 0 },
-    { id: '3', word: 'diversity', color: '#60a5fa', count: 0 },
-  ]);
-  
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [document, setDocument] = useState<DocumentData | null>(null);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
+
+  // Load keywords and settings from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedKeywords = localStorage.getItem(STORAGE_KEYS.KEYWORDS);
+      const savedHighlightEnabled = localStorage.getItem(STORAGE_KEYS.HIGHLIGHT_ENABLED);
+
+      if (savedKeywords) {
+        const parsedKeywords = JSON.parse(savedKeywords);
+        if (Array.isArray(parsedKeywords) && parsedKeywords.length > 0) {
+          setKeywords(parsedKeywords);
+        } else {
+          setKeywords(DEFAULT_KEYWORDS);
+        }
+      } else {
+        setKeywords(DEFAULT_KEYWORDS);
+      }
+
+      if (savedHighlightEnabled !== null) {
+        setHighlightEnabled(savedHighlightEnabled === 'true');
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      setKeywords(DEFAULT_KEYWORDS);
+    }
+  }, []);
+
+  // Save keywords to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.KEYWORDS, JSON.stringify(keywords));
+    } catch (error) {
+      console.error('Error saving keywords to localStorage:', error);
+    }
+  }, [keywords]);
+
+  // Save highlight setting to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.HIGHLIGHT_ENABLED, highlightEnabled.toString());
+    } catch (error) {
+      console.error('Error saving highlight setting to localStorage:', error);
+    }
+  }, [highlightEnabled]);
 
   const addKeyword = useCallback((word: string, color: string) => {
     if (!word?.trim() || !color) {
