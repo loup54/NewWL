@@ -125,4 +125,47 @@
   .content-area {
     @apply bg-white/60 backdrop-blur-sm border border-gray-200/40 rounded-xl shadow-sm;
   }
+
+  /* PWA-specific styles */
+  .pwa-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Better touch targets for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Hide scrollbars in PWA mode */
+  @media (display-mode: standalone) {
+    body {
+      overflow-x: hidden;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
 }

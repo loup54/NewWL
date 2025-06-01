@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { PWAInstallBanner } from '@/components/PWAInstallBanner';
 
 export interface Keyword {
   id: string;
@@ -388,6 +389,8 @@ const Index = () => {
         isFirstVisit={showTour}
         onComplete={completeTour}
       />
+
+      <PWAInstallBanner />
     </div>
   );
 };
