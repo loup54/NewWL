@@ -21,9 +21,11 @@ export interface Keyword {
 }
 
 const Index = () => {
+  console.log('Index component starting to render');
+  
   const [documents, setDocuments] = useState<DocumentData[]>([]);
 
-  console.log('Index component rendering successfully');
+  console.log('Index component state initialized, rendering UI');
 
   return (
     <div className="min-h-screen bg-gray-50">
