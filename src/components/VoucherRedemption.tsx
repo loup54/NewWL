@@ -9,6 +9,12 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
+interface RedemptionResponse {
+  success: boolean;
+  value?: number;
+  error?: string;
+}
+
 export const VoucherRedemption: React.FC = () => {
   const [voucherCode, setVoucherCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -56,16 +62,18 @@ export const VoucherRedemption: React.FC = () => {
         return;
       }
 
-      if (data?.success) {
+      const response = data as RedemptionResponse;
+
+      if (response?.success) {
         toast({
           title: "Success!",
-          description: `Voucher redeemed successfully! You received $${data.value} in premium access.`,
+          description: `Voucher redeemed successfully! You received $${response.value} in premium access.`,
         });
         setVoucherCode('');
       } else {
         toast({
           title: "Redemption Failed",
-          description: data?.error || "This code may have already been used or is invalid",
+          description: response?.error || "This code may have already been used or is invalid",
           variant: "destructive"
         });
       }
