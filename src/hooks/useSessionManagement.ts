@@ -41,15 +41,11 @@ export const useSessionManagement = () => {
     if (timeUntilExpiry <= SESSION_WARNING_TIME && timeUntilExpiry > 0 && !sessionWarningShown) {
       setSessionWarningShown(true);
       
-      const handleExtendSession = () => {
-        refreshSession();
-      };
-      
       toast({
         title: "Session Expiring Soon",
         description: "Your session will expire in a few minutes. Click to extend.",
         action: (
-          <ToastAction altText="Extend Session" onClick={handleExtendSession}>
+          <ToastAction altText="Extend Session" onClick={() => refreshSession()}>
             Extend Session
           </ToastAction>
         ),
