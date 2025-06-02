@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,11 +45,11 @@ export const useSessionManagement = () => {
       toast({
         title: "Session Expiring Soon",
         description: "Your session will expire in a few minutes. Click to extend.",
-        action: (
-          <ToastAction altText="Extend Session" onClick={refreshSession}>
-            Extend Session
-          </ToastAction>
-        ),
+        action: ToastAction({ 
+          altText: "Extend Session", 
+          onClick: refreshSession,
+          children: "Extend Session"
+        }),
       });
     }
 
