@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { FileUpload } from '@/components/FileUpload';
-import { DocumentViewer } from '@/components/DocumentViewer';
+import { OptimizedDocumentViewer } from '@/components/OptimizedDocumentViewer';
 import { KeywordManager } from '@/components/KeywordManager';
 import { EnhancedAnalyticsDashboard } from '@/components/EnhancedAnalyticsDashboard';
 import { EnhancedExportOptions } from '@/components/EnhancedExportOptions';
@@ -12,9 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Keyword, DocumentData } from '@/types';
 import { toast } from 'sonner';
-
-// Re-export types for backward compatibility
-export type { Keyword, DocumentData } from '@/types';
 
 const Index = () => {
   const [document, setDocument] = useState<DocumentData | null>(null);
@@ -179,7 +176,7 @@ const Index = () => {
                 
                 <TabsContent value="document" className="mt-4">
                   <Card className="h-[calc(100vh-12rem)]">
-                    <DocumentViewer
+                    <OptimizedDocumentViewer
                       document={document}
                       keywords={keywords}
                       highlightEnabled={highlightEnabled}
