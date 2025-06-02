@@ -43,14 +43,10 @@ export const useSessionManagement = () => {
       toast({
         title: "Session Expiring Soon",
         description: "Your session will expire in a few minutes. Click to extend.",
-        action: (
-          <button
-            onClick={refreshSession}
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Extend Session
-          </button>
-        ),
+        action: {
+          altText: "Extend Session",
+          onClick: refreshSession,
+        },
       });
     }
 
