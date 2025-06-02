@@ -72,18 +72,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`
-        }
       });
       
       if (error) {
         console.error('Sign up error:', error);
+        return { error };
       } else {
         console.log('Sign up successful:', data);
+        return { error: null };
       }
-      
-      return { error };
     } catch (error) {
       console.error('Sign up exception:', error);
       return { error };
@@ -100,11 +97,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (error) {
         console.error('Sign in error:', error);
+        return { error };
       } else {
         console.log('Sign in successful:', data);
+        return { error: null };
       }
-      
-      return { error };
     } catch (error) {
       console.error('Sign in exception:', error);
       return { error };
