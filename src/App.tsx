@@ -10,6 +10,7 @@ import config from '@/utils/environment';
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
 const ValidationDashboard = lazy(() => import('@/pages/ValidationDashboard'));
+const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/validation" element={<ValidationDashboard />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
