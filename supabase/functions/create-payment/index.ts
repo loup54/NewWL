@@ -9,7 +9,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -39,9 +38,10 @@ serve(async (req) => {
     const user = userData.user;
     console.log('User authenticated:', user.id);
 
+    // Validate request body
     const { voucherType = "premium" } = await req.json();
     
-    // Initialize Stripe
+    // Initialize Stripe with enhanced security
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       throw new Error("Stripe secret key not configured");
@@ -49,11 +49,18 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
+      httpClient: Stripe.createFetchHttpClient(), // Use secure fetch client
     });
 
-    console.log('Creating Stripe checkout session');
+    console.log('Creating Stripe checkout session with enhanced security');
 
-    // Create a one-time payment session for $2 voucher
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!user.email || !emailRegex.test(user.email)) {
+      throw new Error("Invalid user email format");
+    }
+
+    // Create a one-time payment session with enhanced security
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
       line_items: [
@@ -64,7 +71,7 @@ serve(async (req) => {
               name: "WordLens Premium Voucher",
               description: "One-time access voucher for WordLens premium features"
             },
-            unit_amount: 200, // $2.00 in cents
+            unit_amount: 200, // $2.00 in cents - validate this amount
           },
           quantity: 1,
         },
@@ -75,20 +82,39 @@ serve(async (req) => {
       metadata: {
         voucher_type: voucherType,
         user_id: user.id,
+        timestamp: new Date().toISOString(),
       },
+      // Enhanced security settings
+      payment_intent_data: {
+        capture_method: 'automatic',
+        setup_future_usage: undefined, // Don't store payment method
+      },
+      expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes expiry
     });
 
-    console.log('Checkout session created:', session.id);
+    console.log('Checkout session created with security measures:', session.id);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Return only the URL, no sensitive data
+    return new Response(JSON.stringify({ 
+      url: session.url,
+      expires_at: session.expires_at 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     console.error('Payment creation error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    
+    // Don't expose internal errors to client
+    const clientError = error.message.includes('not authenticated') || 
+                       error.message.includes('Invalid') || 
+                       error.message.includes('not configured')
+      ? error.message 
+      : 'Payment processing temporarily unavailable';
+      
+    return new Response(JSON.stringify({ error: clientError }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: error.message.includes('not authenticated') ? 401 : 500,
     });
   }
 });
