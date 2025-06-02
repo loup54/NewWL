@@ -29,6 +29,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log('AuthProvider initializing...');
+    console.log('Supabase URL being used:', supabase.supabaseUrl);
+    console.log('Supabase Key being used:', supabase.supabaseKey.substring(0, 20) + '...');
     
     // Get initial session
     const getSession = async () => {
@@ -69,6 +71,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       console.log('Attempting sign up for:', email);
+      console.log('Using Supabase URL:', supabase.supabaseUrl);
+      
+      // Clear any existing sessions first
+      await supabase.auth.signOut();
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
