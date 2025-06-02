@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -17,8 +18,8 @@ function App() {
   console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
   
   return (
-    <AuthProvider>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <AuthProvider>
         <div className="min-h-screen bg-background">
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -31,8 +32,8 @@ function App() {
           </Suspense>
           <Toaster />
         </div>
-      </ErrorBoundary>
-    </AuthProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
