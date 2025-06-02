@@ -9,6 +9,9 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { logSecurityEvent } from '@/utils/securityMonitor';
+import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';
+import { rateLimiters } from '@/utils/rateLimiter';
 
 interface RedemptionResponse {
   success: boolean;
@@ -24,16 +27,18 @@ export const VoucherRedemption: React.FC = () => {
   const { handleError } = useErrorHandler();
 
   const validateCode = (code: string): boolean => {
-    // Enhanced validation - starts with FREE- or PAID- and has correct format
-    return /^(FREE|PAID)-[A-Z0-9]{8}$/.test(code);
+    const validator = new InputValidator([commonValidations.voucherCode]);
+    const errors = validator.validate({ code });
+    return errors.length === 0;
   };
 
   const sanitizeCode = (code: string): string => {
-    return code.toUpperCase().trim().replace(/[^A-Z0-9-]/g, '');
+    return sanitizeInput.voucherCode(code);
   };
 
   const redeemVoucher = async () => {
     if (!user) {
+      logSecurityEvent.voucherRedemption('anonymous', voucherCode, false, 'User not authenticated');
       toast({
         title: "Login Required",
         description: "Please sign in to redeem a voucher",
@@ -44,7 +49,12 @@ export const VoucherRedemption: React.FC = () => {
 
     const sanitizedCode = sanitizeCode(voucherCode);
     
-    if (!validateCode(sanitizedCode)) {
+    // Validate input
+    const validator = new InputValidator([commonValidations.voucherCode]);
+    const validationErrors = validator.validate({ code: sanitizedCode });
+    
+    if (validationErrors.length > 0) {
+      logSecurityEvent.validationFailure(user.id, 'voucherCode', sanitizedCode, validationErrors[0].message);
       toast({
         title: "Invalid Code Format",
         description: "Please enter a valid voucher code (e.g., FREE-XXXXXXXX)",
@@ -53,6 +63,23 @@ export const VoucherRedemption: React.FC = () => {
       return;
     }
 
+    // Check rate limit
+    const rateLimitResult = rateLimiters.voucherRedemption.checkLimit(user.id);
+    if (!rateLimitResult.allowed) {
+      logSecurityEvent.rateLimitExceeded(user.id, 'voucher_redemption', 5);
+      setRateLimitInfo({ 
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime 
+      });
+      toast({
+        title: "Too Many Attempts", 
+        description: "Please wait before trying again",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRateLimitInfo({ remaining: rateLimitResult.remaining });
     setIsRedeeming(true);
     
     try {
@@ -65,6 +92,7 @@ export const VoucherRedemption: React.FC = () => {
 
       if (error) {
         console.error('Redemption error:', error);
+        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, error.message);
         
         // Handle specific error types
         if (error.message?.includes('rate limit')) {
@@ -87,6 +115,7 @@ export const VoucherRedemption: React.FC = () => {
       const response = data as unknown as RedemptionResponse;
 
       if (response?.success) {
+        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, true);
         toast({
           title: "Success!",
           description: `Voucher redeemed successfully! You received $${response.value} in premium access.`,
@@ -95,6 +124,7 @@ export const VoucherRedemption: React.FC = () => {
         setRateLimitInfo({});
       } else {
         const errorMessage = response?.error || "This code may have already been used or is invalid";
+        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, errorMessage);
         
         toast({
           title: "Redemption Failed",
@@ -104,6 +134,7 @@ export const VoucherRedemption: React.FC = () => {
       }
     } catch (error) {
       console.error('Voucher redemption error:', error);
+      logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, error instanceof Error ? error.message : 'Unknown error');
       handleError(error instanceof Error ? error : new Error('Failed to redeem voucher code'));
     } finally {
       setIsRedeeming(false);

@@ -9,6 +9,9 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { logSecurityEvent } from '@/utils/securityMonitor';
+import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';
+import { rateLimiters } from '@/utils/rateLimiter';
 
 export const FreeVoucherGenerator: React.FC = () => {
   const [generatedCode, setGeneratedCode] = useState<string>('');
@@ -20,19 +23,24 @@ export const FreeVoucherGenerator: React.FC = () => {
   const { handleError } = useErrorHandler();
 
   const validateInputs = (): boolean => {
-    if (codeCount < 1 || codeCount > 100) {
-      toast({
-        title: "Invalid Code Count",
-        description: "Please enter a number between 1 and 100",
-        variant: "destructive"
-      });
-      return false;
-    }
+    const validator = new InputValidator([
+      commonValidations.codeCount,
+      commonValidations.voucherValue
+    ]);
+    
+    const errors = validator.validate({ 
+      codeCount: sanitizeInput.number(codeCount),
+      value: sanitizeInput.number(voucherValue)
+    });
 
-    if (voucherValue < 0.01 || voucherValue > 1000) {
+    if (errors.length > 0) {
+      errors.forEach(error => {
+        logSecurityEvent.validationFailure(user?.id || 'unknown', error.field, error.field === 'codeCount' ? codeCount : voucherValue, error.message);
+      });
+      
       toast({
-        title: "Invalid Voucher Value",
-        description: "Please enter a value between $0.01 and $1000",
+        title: "Invalid Input",
+        description: errors[0].message,
         variant: "destructive"
       });
       return false;
@@ -43,6 +51,7 @@ export const FreeVoucherGenerator: React.FC = () => {
 
   const generateVoucherCode = async () => {
     if (!user) {
+      logSecurityEvent.voucherGeneration('anonymous', codeCount, false);
       toast({
         title: "Login Required",
         description: "Please sign in to generate voucher codes",
@@ -55,20 +64,41 @@ export const FreeVoucherGenerator: React.FC = () => {
       return;
     }
 
+    // Check rate limit
+    const rateLimitResult = rateLimiters.voucherGeneration.checkLimit(user.id);
+    if (!rateLimitResult.allowed) {
+      logSecurityEvent.rateLimitExceeded(user.id, 'voucher_generation', 10);
+      setRateLimitInfo({ 
+        remaining: rateLimitResult.remaining,
+        resetTime: rateLimitResult.resetTime 
+      });
+      toast({
+        title: "Rate Limit Exceeded",
+        description: "Too many requests. Please wait before trying again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRateLimitInfo({ remaining: rateLimitResult.remaining });
     setIsGenerating(true);
 
     try {
       console.log('Generating voucher with enhanced security validation');
       
+      const sanitizedCount = sanitizeInput.number(codeCount) || 1;
+      const sanitizedValue = sanitizeInput.number(voucherValue) || 2.00;
+      
       const { data, error } = await supabase.functions.invoke('generate-voucher', {
         body: { 
-          codeCount: Math.floor(codeCount), // Ensure integer
-          value: Math.round(voucherValue * 100) / 100 // Round to 2 decimal places
+          codeCount: Math.floor(sanitizedCount),
+          value: Math.round(sanitizedValue * 100) / 100
         }
       });
 
       if (error) {
         console.error('Error generating voucher:', error);
+        logSecurityEvent.voucherGeneration(user.id, sanitizedCount, false);
         
         // Handle specific error types
         if (error.message?.includes('rate limit') || error.message?.includes('Rate limit')) {
@@ -109,7 +139,9 @@ export const FreeVoucherGenerator: React.FC = () => {
       }
 
       if (data?.success) {
-        if (codeCount === 1 && data.codes?.[0]) {
+        logSecurityEvent.voucherGeneration(user.id, sanitizedCount, true);
+        
+        if (sanitizedCount === 1 && data.codes?.[0]) {
           setGeneratedCode(data.codes[0].code);
         }
 
@@ -120,10 +152,12 @@ export const FreeVoucherGenerator: React.FC = () => {
         
         setRateLimitInfo({});
       } else {
+        logSecurityEvent.voucherGeneration(user.id, sanitizedCount, false);
         throw new Error(data?.error || 'Unknown error occurred');
       }
     } catch (error) {
       console.error('Error:', error);
+      logSecurityEvent.voucherGeneration(user.id, codeCount, false);
       handleError(error instanceof Error ? error : new Error('Failed to generate voucher code'));
     } finally {
       setIsGenerating(false);
@@ -248,6 +282,7 @@ export const FreeVoucherGenerator: React.FC = () => {
               <li>Rate limiting (10 requests/minute)</li>
               <li>Input validation & sanitization</li>
               <li>Admin access verification</li>
+              <li>Real-time security monitoring</li>
             </ul>
           </div>
         </div>
