@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AuthModalProps {
   open: boolean;
@@ -15,59 +15,62 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
-  const { signIn, signUp } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { signIn, signUp, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState<string>('');
+
+  const validateForm = () => {
+    if (!email.trim()) {
+      setLocalError('Email is required');
+      return false;
+    }
+    if (!email.includes('@')) {
+      setLocalError('Please enter a valid email address');
+      return false;
+    }
+    if (!password) {
+      setLocalError('Password is required');
+      return false;
+    }
+    if (password.length < 6) {
+      setLocalError('Password must be at least 6 characters long');
+      return false;
+    }
+    setLocalError('');
+    return true;
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!validateForm()) return;
 
     const { error } = await signIn(email, password);
     
-    if (error) {
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "You've been signed in successfully."
-      });
+    if (!error) {
       onOpenChange(false);
       setEmail('');
       setPassword('');
+      setLocalError('');
     }
-    
-    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!validateForm()) return;
 
     const { error } = await signUp(email, password);
     
-    if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account."
-      });
+    if (!error) {
       onOpenChange(false);
       setEmail('');
       setPassword('');
+      setLocalError('');
     }
-    
-    setLoading(false);
+  };
+
+  const handleTabChange = () => {
+    setLocalError('');
   };
 
   return (
@@ -77,7 +80,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
           <DialogTitle>Welcome to WordLens</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="signin" className="w-full">
+        {localError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{localError}</AlertDescription>
+          </Alert>
+        )}
+        
+        <Tabs defaultValue="signin" className="w-full" onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -97,6 +107,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -113,6 +124,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -138,6 +150,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -149,12 +162,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
                     required
                     minLength={6}
+                    disabled={loading}
                   />
                 </div>
               </div>

@@ -13,7 +13,6 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, LogOut, Settings, Gift } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 import { VoucherRedemption } from '@/components/VoucherRedemption';
 
 export const UserMenu: React.FC = () => {
@@ -22,10 +21,6 @@ export const UserMenu: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast({
-      title: "Signed out",
-      description: "You've been signed out successfully."
-    });
   };
 
   if (!user) return null;
