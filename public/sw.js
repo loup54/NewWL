@@ -1,14 +1,18 @@
-const CACHE_NAME = 'wordlens-v2';
-const STATIC_CACHE_NAME = 'wordlens-static-v2';
-const DYNAMIC_CACHE_NAME = 'wordlens-dynamic-v2';
+
+const CACHE_NAME = 'wordlens-v3-production';
+const STATIC_CACHE_NAME = 'wordlens-static-v3';
+const DYNAMIC_CACHE_NAME = 'wordlens-dynamic-v3';
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.ico'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/favicon.png'
 ];
 
+// Cache strategies with improved error handling
 const CACHE_STRATEGIES = {
   CACHE_FIRST: 'cache-first',
   NETWORK_FIRST: 'network-first',
@@ -16,17 +20,25 @@ const CACHE_STRATEGIES = {
 };
 
 self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...');
   event.waitUntil(
     Promise.all([
-      caches.open(STATIC_CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
+      caches.open(STATIC_CACHE_NAME).then((cache) => {
+        console.log('Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      }),
       caches.open(DYNAMIC_CACHE_NAME)
     ]).then(() => {
+      console.log('Service Worker installation complete');
       self.skipWaiting();
+    }).catch((error) => {
+      console.error('Service Worker installation failed:', error);
     })
   );
 });
 
 self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating...');
   event.waitUntil(
     Promise.all([
       // Clean up old caches
@@ -35,7 +47,9 @@ self.addEventListener('activate', (event) => {
           cacheNames.map((cacheName) => {
             if (cacheName !== STATIC_CACHE_NAME && 
                 cacheName !== DYNAMIC_CACHE_NAME && 
-                cacheName !== CACHE_NAME) {
+                cacheName !== CACHE_NAME &&
+                !cacheName.includes('wordlens-v3')) {
+              console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
@@ -43,7 +57,9 @@ self.addEventListener('activate', (event) => {
       }),
       // Take control of all clients
       self.clients.claim()
-    ])
+    ]).then(() => {
+      console.log('Service Worker activation complete');
+    })
   );
 });
 
@@ -57,94 +73,109 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http(s) requests
   if (!url.protocol.startsWith('http')) return;
 
-  // Handle different types of requests
+  // Skip requests to external domains
+  if (url.origin !== location.origin) return;
+
+  // Handle different types of requests with improved strategies
   if (STATIC_ASSETS.some(asset => url.pathname === asset)) {
-    // Static assets - cache first
+    // Static assets - cache first with network fallback
     event.respondWith(cacheFirst(request, STATIC_CACHE_NAME));
-  } else if (url.pathname.startsWith('/api/')) {
-    // API requests - network first
-    event.respondWith(networkFirst(request, DYNAMIC_CACHE_NAME));
+  } else if (url.pathname.startsWith('/assets/')) {
+    // Asset files - cache first with long-term caching
+    event.respondWith(cacheFirst(request, STATIC_CACHE_NAME));
   } else {
-    // Other requests - stale while revalidate
+    // App shell - stale while revalidate for better UX
     event.respondWith(staleWhileRevalidate(request, DYNAMIC_CACHE_NAME));
   }
 });
 
-// Cache strategies
+// Improved cache strategies with better error handling
 async function cacheFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cachedResponse = await cache.match(request);
-  
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  
   try {
-    const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (error) {
-    console.error('Cache first strategy failed:', error);
-    throw error;
-  }
-}
-
-async function networkFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (error) {
+    const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
+    
     if (cachedResponse) {
+      console.log('Serving from cache:', request.url);
       return cachedResponse;
     }
+    
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      console.log('Caching new resource:', request.url);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (error) {
+    console.error('Cache first strategy failed for:', request.url, error);
     throw error;
   }
 }
 
 async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cachedResponse = await cache.match(request);
-  
-  const networkResponsePromise = fetch(request).then((networkResponse) => {
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone());
+  try {
+    const cache = await caches.open(cacheName);
+    const cachedResponse = await cache.match(request);
+    
+    const networkResponsePromise = fetch(request).then((networkResponse) => {
+      if (networkResponse.ok) {
+        console.log('Updating cache with fresh content:', request.url);
+        cache.put(request, networkResponse.clone());
+      }
+      return networkResponse;
+    }).catch((error) => {
+      console.warn('Network request failed for:', request.url, error);
+      return null;
+    });
+    
+    if (cachedResponse) {
+      console.log('Serving stale content while revalidating:', request.url);
+      return cachedResponse;
     }
-    return networkResponse;
-  }).catch(() => {
-    // Network failed, but we might have cache
-    return null;
-  });
-  
-  return cachedResponse || networkResponsePromise;
+    
+    return networkResponsePromise;
+  } catch (error) {
+    console.error('Stale while revalidate strategy failed for:', request.url, error);
+    throw error;
+  }
 }
 
-// Handle background sync for offline actions
+// Enhanced error handling and logging
+self.addEventListener('error', (event) => {
+  console.error('Service Worker error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('Service Worker unhandled rejection:', event.reason);
+});
+
+// Background sync for offline functionality
 self.addEventListener('sync', (event) => {
   if (event.tag === 'background-sync') {
+    console.log('Background sync triggered');
     event.waitUntil(handleBackgroundSync());
   }
 });
 
 async function handleBackgroundSync() {
-  // This would handle syncing offline actions when coming back online
-  console.log('Background sync triggered');
+  try {
+    // Handle any offline actions when coming back online
+    console.log('Processing background sync tasks');
+    // Future: Implement offline document processing queue
+  } catch (error) {
+    console.error('Background sync failed:', error);
+  }
 }
 
-// Handle push notifications (for future use)
+// Push notifications for future features
 self.addEventListener('push', (event) => {
   if (event.data) {
     const options = {
       body: event.data.text(),
       icon: '/icon-192.png',
       badge: '/icon-192.png',
+      vibrate: [100, 50, 100],
+      requireInteraction: true
     };
     
     event.waitUntil(
@@ -152,3 +183,5 @@ self.addEventListener('push', (event) => {
     );
   }
 });
+
+console.log('Service Worker loaded successfully');

@@ -10,6 +10,21 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="WordLens" />
     
+    <!-- Content Security Policy for production -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://cdn.gpteng.co;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob:;
+      font-src 'self';
+      connect-src 'self';
+      worker-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+    ">
+    
     <!-- SEO Meta Tags -->
     <meta name="description" content="WordLens Insight Engine - Analyze documents for meaningful themes like respect, inclusion, and diversity. Upload documents and get instant keyword analysis and insights." />
     <meta name="keywords" content="document analysis, keyword analysis, text analysis, content insights, document processing, word analysis, text mining, document intelligence" />
@@ -43,6 +58,10 @@
     <!-- iOS Splash Screens -->
     <link rel="apple-touch-startup-image" href="/icon-512.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/icon-192.png" as="image" type="image/png" />
+    <link rel="dns-prefetch" href="//cdn.gpteng.co" />
     
     <title>WordLens Insight Engine - Document Analysis Tool</title>
     <link rel="manifest" href="/manifest.json" />
