@@ -1,19 +1,19 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Menu, X, Shield } from 'lucide-react';
 import { AuthModal } from '@/components/AuthModal';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { Link, useLocation } from 'react-router-dom';
 
 export const Header: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { isAdmin } = useUserRoles();
   const location = useLocation();
-
-  // Simple admin check
-  const isAdmin = user?.email?.includes('admin') || user?.email?.includes('test');
 
   return (
     <>
