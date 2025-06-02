@@ -10,18 +10,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/icon-192.png",
+      "src": "/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/lovable-uploads/a302bbe2-3648-416f-9636-28183914d117.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"

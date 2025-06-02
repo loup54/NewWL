@@ -24,8 +24,8 @@ const config: CapacitorConfig = {
       spinnerColor: '#ffffff',
       splashFullScreen: true,
       splashImmersive: true,
-      splashImageSource: 'icon-512.png',
-      splashImageSourceDark: 'icon-512.png'
+      splashImageSource: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png',
+      splashImageSourceDark: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png'
     },
     StatusBar: {
       style: 'dark',
@@ -45,16 +45,16 @@ const config: CapacitorConfig = {
     contentInset: 'automatic',
     scrollEnabled: true,
     backgroundColor: '#ffffff',
-    icon: 'public/icon-1024.png'
+    icon: '/lovable-uploads/a302bbe2-3648-416f-9636-28183914d117.png'
   },
   android: {
     backgroundColor: '#ffffff',
     allowMixedContent: false,
     captureInput: true,
     webContentsDebuggingEnabled: false, // Disable in production
-    icon: 'public/icon-512.png',
+    icon: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png',
     adaptiveIcon: {
-      foreground: 'public/icon-512.png',
+      foreground: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png',
       background: '#3b82f6'
     }
   }
