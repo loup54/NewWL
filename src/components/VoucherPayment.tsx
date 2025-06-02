@@ -2,14 +2,24 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, Gift, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { CreditCard, Gift, Loader2, AlertCircle } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
 
 export const VoucherPayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const configured = isSupabaseConfigured();
 
   const handlePurchaseVoucher = async () => {
+    if (!configured) {
+      toast({
+        title: "Configuration Required",
+        description: "Supabase environment variables need to be configured first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       console.log('Creating payment session...');
@@ -71,9 +81,19 @@ export const VoucherPayment: React.FC = () => {
             </ul>
           </div>
 
+          {!configured && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-amber-800">
+                <p className="font-medium">Setup Required</p>
+                <p>Please configure Supabase environment variables to enable payments.</p>
+              </div>
+            </div>
+          )}
+
           <Button 
             onClick={handlePurchaseVoucher}
-            disabled={loading}
+            disabled={loading || !configured}
             className="w-full"
             size="lg"
           >
@@ -85,7 +105,7 @@ export const VoucherPayment: React.FC = () => {
             ) : (
               <>
                 <CreditCard className="w-4 h-4 mr-2" />
-                Purchase Voucher
+                {configured ? 'Purchase Voucher' : 'Setup Required'}
               </>
             )}
           </Button>
