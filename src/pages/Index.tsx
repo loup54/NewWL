@@ -25,84 +25,124 @@ export interface Keyword {
   count: number;
 }
 
-// Add immediate console log to test if JS is loading
-console.log('=== WORDLENS APP LOADING ===');
-console.log('JavaScript is executing');
-console.log('iOS version check:', navigator.userAgent);
+// Test basic JavaScript execution
+try {
+  console.log('WordLens app initializing...');
+  console.log('User agent:', navigator.userAgent);
+  console.log('Platform:', navigator.platform);
+} catch (e) {
+  // Fallback for environments where console might not be available
+  window.alert && window.alert('WordLens loading...');
+}
 
 const Index = () => {
-  console.log('=== INDEX COMPONENT RENDER START ===');
-  
-  const [documents, setDocuments] = useState<DocumentData[]>([]);
+  // Use simpler state initialization for better iOS compatibility
+  const [documents, setDocuments] = useState([]);
   const [showMultiUpload, setShowMultiUpload] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Add useEffect to handle component mounting and iOS compatibility
+  const [hasError, setHasError] = useState(false);
+
+  // Simplified useEffect for iOS compatibility
   useEffect(() => {
-    console.log('=== INDEX COMPONENT MOUNTED ===');
-    console.log('Documents state:', documents);
-    console.log('Show welcome state:', showWelcome);
-    
-    // Add a small delay to ensure proper rendering on iOS
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      console.log('=== LOADING COMPLETE ===');
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    try {
+      console.log('Index component mounted successfully');
+      
+      // Simple timeout to ensure rendering works
+      const timer = setTimeout(() => {
+        console.log('Component ready');
+      }, 50);
+      
+      return () => {
+        clearTimeout(timer);
+      };
+    } catch (error) {
+      console.error('Error in useEffect:', error);
+      setHasError(true);
+    }
   }, []);
 
-  const handleDocumentUpload = (document: DocumentData) => {
-    console.log('Document uploaded:', document.filename);
-    setDocuments(prev => [...prev, document]);
-    setShowWelcome(false);
+  const handleDocumentUpload = (document) => {
+    try {
+      console.log('Document uploaded:', document.filename);
+      setDocuments(prev => [...prev, document]);
+      setShowWelcome(false);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      setHasError(true);
+    }
   };
 
-  const handleDocumentRemove = (index: number) => {
-    console.log('Removing document at index:', index);
-    setDocuments(prev => prev.filter((_, i) => i !== index));
+  const handleDocumentRemove = (index) => {
+    try {
+      console.log('Removing document at index:', index);
+      setDocuments(prev => prev.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error('Error removing document:', error);
+    }
   };
 
   const toggleMultiUpload = () => {
-    console.log('Toggling multi-upload mode');
-    setShowMultiUpload(!showMultiUpload);
+    try {
+      console.log('Toggling multi-upload mode');
+      setShowMultiUpload(!showMultiUpload);
+    } catch (error) {
+      console.error('Error toggling multi-upload:', error);
+    }
   };
 
   const handleStartTour = () => {
-    console.log('Starting tour');
-    setShowWelcome(false);
+    try {
+      console.log('Starting tour');
+      setShowWelcome(false);
+    } catch (error) {
+      console.error('Error starting tour:', error);
+    }
   };
 
   const handleSkipTour = () => {
-    console.log('Skipping tour');
-    setShowWelcome(false);
+    try {
+      console.log('Skipping tour');
+      setShowWelcome(false);
+    } catch (error) {
+      console.error('Error skipping tour:', error);
+    }
   };
 
-  // Show loading state while initializing
-  if (isLoading) {
-    console.log('=== RENDERING LOADING STATE ===');
+  // Error fallback
+  if (hasError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading WordLens...</p>
+        <div className="text-center p-6">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">WordLens</h1>
+          <p className="text-gray-600 mb-4">Loading issue detected. Please refresh the page.</p>
+          <button 
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => window.location.reload()}
+          >
+            Refresh
+          </button>
         </div>
       </div>
     );
   }
 
-  // Show welcome tutorial when first visiting and no documents uploaded
+  // Simple welcome check
   if (showWelcome && documents.length === 0) {
-    console.log('=== RENDERING WELCOME TUTORIAL ===');
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />
-      </div>
-    );
+    try {
+      console.log('Rendering welcome tutorial');
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />
+        </div>
+      );
+    } catch (error) {
+      console.error('Error rendering welcome tutorial:', error);
+      // Fallback to main content
+      setShowWelcome(false);
+    }
   }
   
-  console.log('=== RENDERING MAIN CONTENT ===');
+  console.log('Rendering main application');
   
   return (
     <div className="min-h-screen bg-gray-50">
