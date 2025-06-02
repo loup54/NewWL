@@ -31,8 +31,18 @@ const Index = () => {
     toast.success(`Document "${uploadedDocument.filename}" loaded successfully!`);
   }, []);
 
-  const handleKeywordsUpdate = useCallback((updatedKeywords: Keyword[]) => {
-    setKeywords(updatedKeywords);
+  const handleAddKeyword = useCallback((word: string, color: string) => {
+    const newKeyword: Keyword = {
+      id: Date.now().toString(),
+      word,
+      color,
+      count: 0
+    };
+    setKeywords(prev => [...prev, newKeyword]);
+  }, []);
+
+  const handleRemoveKeyword = useCallback((id: string) => {
+    setKeywords(prev => prev.filter(keyword => keyword.id !== id));
   }, []);
 
   const handleKeywordCountsUpdate = useCallback((counts: Record<string, number>) => {
@@ -146,7 +156,15 @@ const Index = () => {
               {/* Keyword Manager */}
               <KeywordManager
                 keywords={keywords}
-                onKeywordsUpdate={handleKeywordsUpdate}
+                onAddKeyword={handleAddKeyword}
+                onRemoveKeyword={handleRemoveKeyword}
+                highlightEnabled={highlightEnabled}
+                onToggleHighlight={setHighlightEnabled}
+                caseSensitive={caseSensitive}
+                onToggleCaseSensitive={setCaseSensitive}
+                documentContent={document.content}
+                document={document}
+                keywordCounts={keywordCounts}
               />
             </div>
 
