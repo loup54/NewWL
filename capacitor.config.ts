@@ -5,10 +5,7 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.83239b5384804243b2ddd190bf041317',
   appName: 'wordlens-theme-tracker',
   webDir: 'dist',
-  server: {
-    url: 'https://83239b53-8480-4243-b2dd-d190bf041317.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // Removed server configuration to use local build
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
@@ -31,9 +28,6 @@ const config: CapacitorConfig = {
       resize: 'ionic',
       style: 'dark',
       resizeOnFullScreen: true
-    },
-    App: {
-      launchUrl: 'https://83239b53-8480-4243-b2dd-d190bf041317.lovableproject.com?forceHideBadge=true'
     }
   },
   ios: {
