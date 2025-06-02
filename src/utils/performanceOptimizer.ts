@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { performanceMonitor } from './performanceUtils';
 
 interface OptimizationConfig {
@@ -55,14 +56,14 @@ export class PerformanceOptimizer {
   optimizeComponent<T extends React.ComponentType<any>>(
     Component: T,
     options: Partial<OptimizationConfig> = {}
-  ): T {
+  ): React.MemoExoticComponent<T> {
     const config = { ...this.config, ...options };
     
     return React.memo(Component, (prevProps, nextProps) => {
       // Custom comparison logic for performance
       const keys = Object.keys(nextProps);
       return keys.every(key => prevProps[key] === nextProps[key]);
-    }) as T;
+    });
   }
 
   measureComponentRender<T>(
