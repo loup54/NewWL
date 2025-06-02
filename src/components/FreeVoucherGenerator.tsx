@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export const FreeVoucherGenerator: React.FC = () => {
   const [generatedCode, setGeneratedCode] = useState<string>('');
   const [codeCount, setCodeCount] = useState<number>(1);
+  const [voucherValue, setVoucherValue] = useState<number>(2.00);
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
 
@@ -28,39 +29,35 @@ export const FreeVoucherGenerator: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      const codes = [];
-      for (let i = 0; i < codeCount; i++) {
-        const randomPart = Math.random().toString(36).substr(2, 8).toUpperCase();
-        const code = `FREE-${randomPart}`;
-        codes.push({
-          code,
-          value: 2.00,
-          created_by: user.id
-        });
-      }
-
-      const { error } = await supabase
-        .from('voucher_codes')
-        .insert(codes);
+      const { data, error } = await supabase.functions.invoke('generate-voucher', {
+        body: { 
+          codeCount,
+          value: voucherValue 
+        }
+      });
 
       if (error) {
-        console.error('Error creating voucher:', error);
+        console.error('Error generating voucher:', error);
         toast({
           title: "Error",
-          description: "Failed to generate voucher code",
+          description: error.message || "Failed to generate voucher code",
           variant: "destructive"
         });
         return;
       }
 
-      if (codeCount === 1) {
-        setGeneratedCode(codes[0].code);
-      }
+      if (data?.success) {
+        if (codeCount === 1 && data.codes?.[0]) {
+          setGeneratedCode(data.codes[0].code);
+        }
 
-      toast({
-        title: "Success!",
-        description: `Generated ${codeCount} voucher code${codeCount > 1 ? 's' : ''}`,
-      });
+        toast({
+          title: "Success!",
+          description: `Generated ${data.count} secure voucher code${data.count > 1 ? 's' : ''}`,
+        });
+      } else {
+        throw new Error(data?.error || 'Unknown error');
+      }
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -88,7 +85,7 @@ export const FreeVoucherGenerator: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Gift className="w-5 h-5" />
-          Free Voucher Generator
+          Secure Voucher Generator
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -98,9 +95,22 @@ export const FreeVoucherGenerator: React.FC = () => {
             id="count"
             type="number"
             min="1"
-            max="10"
+            max="100"
             value={codeCount}
             onChange={(e) => setCodeCount(parseInt(e.target.value) || 1)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="value">Voucher Value ($)</Label>
+          <Input
+            id="value"
+            type="number"
+            min="0.01"
+            max="1000"
+            step="0.01"
+            value={voucherValue}
+            onChange={(e) => setVoucherValue(parseFloat(e.target.value) || 2.00)}
           />
         </div>
 
@@ -118,7 +128,7 @@ export const FreeVoucherGenerator: React.FC = () => {
           ) : (
             <>
               <RefreshCw className="w-4 h-4 mr-2" />
-              Generate Free Code{codeCount > 1 ? 's' : ''}
+              Generate Secure Code{codeCount > 1 ? 's' : ''}
             </>
           )}
         </Button>
@@ -141,10 +151,16 @@ export const FreeVoucherGenerator: React.FC = () => {
               </Button>
             </div>
             <p className="text-xs text-gray-500">
-              This code can be redeemed for $2.00 value
+              This code can be redeemed for ${voucherValue.toFixed(2)} value
             </p>
           </div>
         )}
+
+        <div className="text-xs text-gray-500 space-y-1">
+          <p>• Codes are generated using cryptographic randomness</p>
+          <p>• Server-side generation ensures security</p>
+          <p>• Admin access required for generation</p>
+        </div>
       </CardContent>
     </Card>
   );
