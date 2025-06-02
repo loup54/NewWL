@@ -1,69 +1,102 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Plus, Eye, Trash2, Download } from 'lucide-react';
+import { Settings, Plus, Download, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface VoucherRecord {
   id: string;
   code: string;
   value: number;
   status: 'active' | 'used' | 'expired';
-  createdAt: Date;
-  usedAt?: Date;
-  usedBy?: string;
+  created_at: string;
+  used_at?: string;
+  used_by?: string;
 }
 
 export const AdminVoucherPanel: React.FC = () => {
-  const [vouchers, setVouchers] = useState<VoucherRecord[]>([
-    {
-      id: '1',
-      code: 'FREE-ABC12345',
-      value: 2.00,
-      status: 'used',
-      createdAt: new Date('2024-01-15'),
-      usedAt: new Date('2024-01-20'),
-      usedBy: 'user@example.com'
-    },
-    {
-      id: '2',
-      code: 'FREE-XYZ67890',
-      value: 2.00,
-      status: 'active',
-      createdAt: new Date('2024-01-16'),
-    }
-  ]);
-
+  const [vouchers, setVouchers] = useState<VoucherRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [bulkCount, setBulkCount] = useState(5);
   const [bulkValue, setBulkValue] = useState(2.00);
+  const { user } = useAuth();
 
-  const generateBulkCodes = () => {
-    const newVouchers: VoucherRecord[] = [];
-    
-    for (let i = 0; i < bulkCount; i++) {
-      const randomPart = Math.random().toString(36).substr(2, 8).toUpperCase();
-      const code = `FREE-${randomPart}`;
-      
-      newVouchers.push({
-        id: Date.now().toString() + i,
-        code,
-        value: bulkValue,
-        status: 'active',
-        createdAt: new Date(),
-      });
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
+
+  const fetchVouchers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('voucher_codes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching vouchers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch voucher codes",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setVouchers(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
     }
-    
-    setVouchers(prev => [...prev, ...newVouchers]);
-    
-    toast({
-      title: "Codes Generated",
-      description: `Generated ${bulkCount} new voucher codes`,
-    });
+  };
+
+  const generateBulkCodes = async () => {
+    if (!user) return;
+
+    try {
+      const newVouchers = [];
+      
+      for (let i = 0; i < bulkCount; i++) {
+        const randomPart = Math.random().toString(36).substr(2, 8).toUpperCase();
+        const code = `FREE-${randomPart}`;
+        
+        newVouchers.push({
+          code,
+          value: bulkValue,
+          created_by: user.id
+        });
+      }
+
+      const { error } = await supabase
+        .from('voucher_codes')
+        .insert(newVouchers);
+
+      if (error) {
+        console.error('Error creating vouchers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to generate voucher codes",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Codes Generated",
+        description: `Generated ${bulkCount} new voucher codes`,
+      });
+
+      fetchVouchers();
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const exportCodes = () => {
@@ -79,12 +112,32 @@ export const AdminVoucherPanel: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const deleteVoucher = (id: string) => {
-    setVouchers(prev => prev.filter(v => v.id !== id));
-    toast({
-      title: "Code Deleted",
-      description: "Voucher code has been removed",
-    });
+  const deleteVoucher = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('voucher_codes')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting voucher:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete voucher code",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Code Deleted",
+        description: "Voucher code has been removed",
+      });
+
+      fetchVouchers();
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const getStatusBadge = (status: VoucherRecord['status']) => {
@@ -96,6 +149,16 @@ export const AdminVoucherPanel: React.FC = () => {
     
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
+
+  if (loading) {
+    return (
+      <Card className="w-full max-w-4xl">
+        <CardContent className="p-6">
+          <div className="text-center">Loading voucher codes...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-4xl">
@@ -172,7 +235,7 @@ export const AdminVoucherPanel: React.FC = () => {
                   
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-500">
-                      {voucher.createdAt.toLocaleDateString()}
+                      {new Date(voucher.created_at).toLocaleDateString()}
                     </span>
                     {voucher.status === 'active' && (
                       <Button

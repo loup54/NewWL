@@ -30,6 +30,74 @@ export type Database = {
         }
         Relationships: []
       }
+      voucher_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          status: string
+          used_at: string | null
+          used_by: string | null
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          used_at?: string | null
+          used_by?: string | null
+          value?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          used_at?: string | null
+          used_by?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
+      voucher_redemptions: {
+        Row: {
+          id: string
+          redeemed_at: string | null
+          user_id: string
+          value_redeemed: number
+          voucher_code_id: string
+        }
+        Insert: {
+          id?: string
+          redeemed_at?: string | null
+          user_id: string
+          value_redeemed: number
+          voucher_code_id: string
+        }
+        Update: {
+          id?: string
+          redeemed_at?: string | null
+          user_id?: string
+          value_redeemed?: number
+          voucher_code_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_redemptions_voucher_code_id_fkey"
+            columns: ["voucher_code_id"]
+            isOneToOne: false
+            referencedRelation: "voucher_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -47,6 +115,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
         }
         Returns: boolean
+      }
+      redeem_voucher_code: {
+        Args: { _code: string; _user_id: string }
+        Returns: Json
       }
     }
     Enums: {

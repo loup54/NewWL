@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Gift, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const VoucherRedemption: React.FC = () => {
   const [voucherCode, setVoucherCode] = useState('');
@@ -40,19 +41,39 @@ export const VoucherRedemption: React.FC = () => {
     setIsRedeeming(true);
     
     try {
-      // Simulate redemption process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Success!",
-        description: "Voucher redeemed successfully! You now have premium access.",
+      const { data, error } = await supabase.rpc('redeem_voucher_code', {
+        _code: voucherCode,
+        _user_id: user.id
       });
-      
-      setVoucherCode('');
+
+      if (error) {
+        console.error('Redemption error:', error);
+        toast({
+          title: "Redemption Failed", 
+          description: "Failed to redeem voucher code",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data?.success) {
+        toast({
+          title: "Success!",
+          description: `Voucher redeemed successfully! You received $${data.value} in premium access.`,
+        });
+        setVoucherCode('');
+      } else {
+        toast({
+          title: "Redemption Failed",
+          description: data?.error || "This code may have already been used or is invalid",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
+      console.error('Voucher redemption error:', error);
       toast({
-        title: "Redemption Failed",
-        description: "This code may have already been used or is invalid",
+        title: "Error",
+        description: "Failed to redeem voucher code",
         variant: "destructive"
       });
     } finally {
