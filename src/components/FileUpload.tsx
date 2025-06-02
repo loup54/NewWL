@@ -3,7 +3,7 @@ import React, { useCallback, forwardRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, FileX } from 'lucide-react';
 import { toast } from 'sonner';
-import { DocumentData } from '@/pages/Index';
+import { DocumentData } from '@/types';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 interface FileUploadProps {

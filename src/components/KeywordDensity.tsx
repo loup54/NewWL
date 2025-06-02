@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { BarChart3, TrendingUp } from 'lucide-react';
-import { Keyword, DocumentData } from '@/pages/Index';
+import { Keyword, DocumentData } from '@/types';
 
 interface KeywordDensityProps {
   keywords: Keyword[];

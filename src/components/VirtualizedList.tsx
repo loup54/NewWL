@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FixedSizeList as List } from 'react-window';
-import { Keyword } from '@/pages/Index';
+import { Keyword } from '@/types';
 import { LineItem } from './VirtualizedLineItem';
 
 interface VirtualizedListProps {

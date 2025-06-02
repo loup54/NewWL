@@ -1,5 +1,4 @@
-
-import { Keyword, DocumentData } from '@/pages/Index';
+import { Keyword, DocumentData } from '@/types';
 
 export const exportKeywordResults = (
   keywords: Keyword[], 

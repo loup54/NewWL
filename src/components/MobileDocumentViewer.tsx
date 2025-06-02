@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useSwipeGesture } from '@/hooks/useSwipeGesture';
-import { DocumentData, Keyword } from '@/pages/Index';
+import { DocumentData, Keyword } from '@/types';
 
 interface MobileDocumentViewerProps {
   document: DocumentData;
