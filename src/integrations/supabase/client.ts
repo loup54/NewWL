@@ -22,4 +22,4 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-console.log('Supabase client created. Auth URL should be:', supabase.auth.url);
+console.log('Supabase client created successfully');

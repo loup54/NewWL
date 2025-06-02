@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -29,8 +28,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log('AuthProvider initializing...');
-    console.log('Supabase URL being used:', supabase.supabaseUrl);
-    console.log('Supabase Key being used:', supabase.supabaseKey.substring(0, 20) + '...');
     
     // Get initial session
     const getSession = async () => {
@@ -71,7 +68,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       console.log('Attempting sign up for:', email);
-      console.log('Using Supabase URL:', supabase.supabaseUrl);
       
       // Clear any existing sessions first
       await supabase.auth.signOut();
