@@ -23,27 +23,28 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('AuthProvider rendering...');
+  console.log('AuthProvider component starting render');
   
+  // Initialize state with proper React hooks
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('AuthProvider state initialized', { user: !!user, session: !!session, loading });
+  console.log('State hooks initialized successfully');
 
   useEffect(() => {
-    console.log('AuthProvider useEffect starting...');
+    console.log('AuthProvider useEffect starting');
     
     let isMounted = true;
-    
-    const initializeAuth = async () => {
+
+    const initAuth = async () => {
       try {
-        console.log('Setting up auth state listener...');
+        console.log('Setting up auth listener');
         
-        // Set up auth state listener
+        // Set up the auth state listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           (event, newSession) => {
-            console.log('Auth state changed:', event, newSession ? 'session exists' : 'no session');
+            console.log('Auth state change:', event, newSession ? 'has session' : 'no session');
             if (isMounted) {
               setSession(newSession);
               setUser(newSession?.user ?? null);
@@ -52,47 +53,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         );
 
-        console.log('Getting initial session...');
-        // Get initial session
+        console.log('Getting initial session');
+        // Get the initial session
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting initial session:', error);
+          console.error('Error getting session:', error);
         } else {
-          console.log('Initial session retrieved:', initialSession ? 'exists' : 'none');
-          if (isMounted) {
-            setSession(initialSession);
-            setUser(initialSession?.user ?? null);
-            setLoading(false);
-          }
+          console.log('Initial session found:', !!initialSession);
         }
 
-        return () => {
-          console.log('Cleaning up auth subscription');
-          subscription.unsubscribe();
-        };
+        if (isMounted) {
+          setSession(initialSession);
+          setUser(initialSession?.user ?? null);
+          setLoading(false);
+        }
+
+        return subscription;
       } catch (error) {
-        console.error('Error in auth initialization:', error);
+        console.error('Auth initialization error:', error);
         if (isMounted) {
           setLoading(false);
         }
+        return null;
       }
     };
 
-    const cleanup = initializeAuth();
+    const subscriptionPromise = initAuth();
 
     return () => {
       isMounted = false;
-      console.log('AuthProvider cleanup');
-      cleanup.then(cleanupFn => {
-        if (cleanupFn) cleanupFn();
-      }).catch(console.error);
+      console.log('Cleaning up auth provider');
+      subscriptionPromise.then(subscription => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      });
     };
   }, []);
 
   const signUp = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign up for:', email);
+      console.log('Starting sign up for:', email);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -105,10 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Sign up error:', error);
         return { error };
-      } else {
-        console.log('Sign up successful:', data);
-        return { error: null };
       }
+      
+      console.log('Sign up successful:', data);
+      return { error: null };
     } catch (error) {
       console.error('Sign up exception:', error);
       return { error };
@@ -117,7 +119,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign in for:', email);
+      console.log('Starting sign in for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -126,10 +129,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.error('Sign in error:', error);
         return { error };
-      } else {
-        console.log('Sign in successful:', data);
-        return { error: null };
       }
+      
+      console.log('Sign in successful:', data);
+      return { error: null };
     } catch (error) {
       console.error('Sign in exception:', error);
       return { error };
@@ -138,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      console.log('Attempting sign out');
+      console.log('Starting sign out');
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Sign out error:', error);
@@ -150,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const value = {
+  const contextValue = {
     user,
     session,
     loading,
@@ -159,10 +162,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
   };
 
-  console.log('AuthProvider about to render context provider');
+  console.log('AuthProvider rendering context with:', { 
+    hasUser: !!user, 
+    hasSession: !!session, 
+    loading 
+  });
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
