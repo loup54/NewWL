@@ -44,7 +44,11 @@ export const useSessionManagement = () => {
       toast({
         title: "Session Expiring Soon",
         description: "Your session will expire in a few minutes. Click to extend.",
-        action: <ToastAction altText="Extend Session" onClick={refreshSession}>Extend Session</ToastAction>,
+        action: (
+          <ToastAction altText="Extend Session" onClick={refreshSession}>
+            Extend Session
+          </ToastAction>
+        ),
       });
     }
 
