@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -12,6 +11,7 @@ const Index = lazy(() => import('@/pages/Index'));
 const ValidationDashboard = lazy(() => import('@/pages/ValidationDashboard'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
   console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
@@ -25,6 +25,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/validation" element={<ValidationDashboard />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/admin" element={<AdminPanel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
