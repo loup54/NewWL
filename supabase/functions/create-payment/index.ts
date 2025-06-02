@@ -15,15 +15,47 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Payment function started');
+    
+    // Create Supabase client for user authentication
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+
+    // Get the authenticated user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      throw new Error("No authorization header provided");
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !userData.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const user = userData.user;
+    console.log('User authenticated:', user.id);
+
     const { voucherType = "premium" } = await req.json();
     
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("Stripe secret key not configured");
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2023-10-16",
     });
 
+    console.log('Creating Stripe checkout session');
+
     // Create a one-time payment session for $2 voucher
     const session = await stripe.checkout.sessions.create({
+      customer_email: user.email,
       line_items: [
         {
           price_data: {
@@ -42,8 +74,11 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/`,
       metadata: {
         voucher_type: voucherType,
+        user_id: user.id,
       },
     });
+
+    console.log('Checkout session created:', session.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
