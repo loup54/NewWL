@@ -2,7 +2,7 @@
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { Document, Packer, Paragraph, TextRun, Table, TableCell, TableRow, HeadingLevel } from 'docx';
-import { Keyword, DocumentData } from '@/pages/Index';
+import { Keyword, DocumentData } from '@/types';
 import { AdvancedDocumentStats } from './advancedAnalytics';
 
 export interface ExportData {

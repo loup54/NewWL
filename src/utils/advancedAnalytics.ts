@@ -1,5 +1,4 @@
-
-import { Keyword } from '@/pages/Index';
+import { Keyword } from '@/types';
 
 export interface AdvancedDocumentStats {
   totalWords: number;
