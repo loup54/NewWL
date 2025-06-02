@@ -8,25 +8,19 @@ import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Settings, Activity, Gauge } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { Navigate } from 'react-router-dom';
+import { PageLoader } from '@/components/LoadingStates';
 
 const AdminPanel = () => {
-  const { user } = useAuth();
   const { isAdmin, loading } = useUserRoles();
 
-  if (!user) {
-    return <Navigate to="/" replace />;
-  }
+  console.log('AdminPanel: Checking admin access', { isAdmin, loading });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="text-center">Loading...</div>
-        </div>
+        <PageLoader />
       </div>
     );
   }
