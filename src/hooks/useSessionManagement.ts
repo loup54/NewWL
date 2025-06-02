@@ -1,8 +1,8 @@
-
 import { useEffect, useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes before expiry
 const SESSION_CHECK_INTERVAL = 60 * 1000; // Check every minute
@@ -43,10 +43,11 @@ export const useSessionManagement = () => {
       toast({
         title: "Session Expiring Soon",
         description: "Your session will expire in a few minutes. Click to extend.",
-        action: {
-          label: "Extend Session",
-          onClick: refreshSession,
-        },
+        action: (
+          <ToastAction altText="Extend Session" onClick={refreshSession}>
+            Extend Session
+          </ToastAction>
+        ),
       });
     }
 
