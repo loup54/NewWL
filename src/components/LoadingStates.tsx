@@ -60,6 +60,15 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   );
 };
 
+export const PageLoader: React.FC = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex flex-col items-center space-y-4">
+      <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
+
 export const SuccessAnimation: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="animate-scale-in">
     {children}
@@ -71,3 +80,11 @@ export const FadeTransition: React.FC<{ children: React.ReactNode }> = ({ childr
     {children}
   </div>
 );
+
+// Export as LoadingStates object for backwards compatibility
+export const LoadingStates = {
+  PageLoader,
+  LoadingState,
+  SuccessAnimation,
+  FadeTransition
+};

@@ -3,7 +3,7 @@ import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
-import { LoadingStates } from '@/components/LoadingStates';
+import { PageLoader } from '@/components/LoadingStates';
 import config from '@/utils/environment';
 
 // Lazy load pages for better performance
@@ -16,7 +16,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background">
-        <Suspense fallback={<LoadingStates.PageLoader />}>
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="*" element={<NotFound />} />
