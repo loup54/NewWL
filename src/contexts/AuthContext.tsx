@@ -12,6 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +34,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { handleAuthError } = useAuthErrorHandler();
+
+  // Session refresh function
+  const refreshSession = async () => {
+    try {
+      console.log('AuthProvider: Refreshing session...');
+      const { error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('AuthProvider: Session refresh error:', error);
+        handleAuthError(error);
+      } else {
+        console.log('AuthProvider: Session refreshed successfully');
+      }
+    } catch (error) {
+      console.error('AuthProvider: Session refresh exception:', error);
+      handleAuthError(error);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -83,6 +101,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           toast({
             title: "Signed out",
             description: "You've been signed out successfully.",
+          });
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('AuthProvider: Token refreshed automatically');
+        } else if (event === 'PASSWORD_RECOVERY') {
+          toast({
+            title: "Password reset",
+            description: "You can now set a new password.",
           });
         }
       }
@@ -182,6 +207,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signUp,
     signIn,
     signOut,
+    refreshSession,
   };
 
   return (
