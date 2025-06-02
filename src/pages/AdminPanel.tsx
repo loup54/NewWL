@@ -3,10 +3,11 @@ import React from 'react';
 import { AdminVoucherPanel } from '@/components/AdminVoucherPanel';
 import { FreeVoucherGenerator } from '@/components/FreeVoucherGenerator';
 import { SecurityDashboard } from '@/components/SecurityDashboard';
+import { PerformanceDashboard } from '@/components/PerformanceDashboard';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Settings, Activity } from 'lucide-react';
+import { Shield, Settings, Activity, Gauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Navigate } from 'react-router-dom';
@@ -61,15 +62,16 @@ const AdminPanel = () => {
             Admin Panel
           </h1>
           <p className="text-gray-600 mt-2">
-            Manage voucher codes, security monitoring, and system administration
+            Manage voucher codes, security monitoring, performance optimization, and system administration
           </p>
         </div>
 
         <Tabs defaultValue="vouchers" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="vouchers">Voucher Management</TabsTrigger>
             <TabsTrigger value="generator">Free Code Generator</TabsTrigger>
             <TabsTrigger value="security">Security Dashboard</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
           
           <TabsContent value="vouchers" className="space-y-6">
@@ -84,6 +86,10 @@ const AdminPanel = () => {
 
           <TabsContent value="security" className="space-y-6">
             <SecurityDashboard />
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-6">
+            <PerformanceDashboard />
           </TabsContent>
         </Tabs>
       </div>
