@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       console.log('Attempting sign up for:', email);
+      console.log('Sign up URL will be:', `https://ccmyjrgrdymwraiuauoq.supabase.co/auth/v1/signup`);
       
       // Clear any existing sessions first
       await supabase.auth.signOut();

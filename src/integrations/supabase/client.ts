@@ -7,7 +7,7 @@ const SUPABASE_URL = "https://ccmyjrgrdymwraiuauoq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjbXlqcmdyZHltd3JhaXVhdW9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg4MjM0ODgsImV4cCI6MjA2NDM5OTQ4OH0.JLROmtAGaL3pCbGsoQf1hS47lk8ovdblb0YoL_fr5cg";
 
 console.log('Creating Supabase client with URL:', SUPABASE_URL);
-console.log('Creating Supabase client with key:', SUPABASE_PUBLISHABLE_KEY.substring(0, 20) + '...');
+console.log('Creating Supabase client with key length:', SUPABASE_PUBLISHABLE_KEY.length);
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -22,4 +22,4 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   }
 });
 
-console.log('Supabase client created successfully');
+console.log('Supabase client created with URL:', SUPABASE_URL);
