@@ -16,11 +16,12 @@ const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
   console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
+  console.log('App: Component rendering');
   
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
+        <AuthProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -31,8 +32,8 @@ function App() {
             </Routes>
           </Suspense>
           <Toaster />
-        </div>
-      </AuthProvider>
+        </AuthProvider>
+      </div>
     </ErrorBoundary>
   );
 }

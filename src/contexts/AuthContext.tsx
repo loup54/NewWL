@@ -27,89 +27,109 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  console.log('AuthProvider: Component initializing');
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log('AuthProvider: Setting up auth state listener');
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+  console.log('AuthProvider: State initialized');
 
-    // Get initial session
-    const getInitialSession = async () => {
+  useEffect(() => {
+    console.log('AuthProvider: useEffect starting');
+    
+    const initializeAuth = async () => {
       try {
+        console.log('AuthProvider: Getting initial session');
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
-          console.error('Error getting initial session:', error);
+          console.error('AuthProvider: Error getting session:', error);
         } else {
-          console.log('Initial session:', session);
+          console.log('AuthProvider: Initial session retrieved:', session);
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error('AuthProvider: Exception getting session:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    getInitialSession();
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('AuthProvider: Auth state change:', event, session);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    // Initialize auth
+    initializeAuth();
 
     return () => {
-      console.log('AuthProvider: Cleaning up auth subscription');
+      console.log('AuthProvider: Cleaning up subscription');
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    console.log('Attempting to sign up user:', email);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
-    
-    if (error) {
-      console.error('Sign up error:', error);
-    } else {
-      console.log('Sign up successful');
+    console.log('AuthProvider: Sign up attempt for:', email);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+      
+      if (error) {
+        console.error('AuthProvider: Sign up error:', error);
+      } else {
+        console.log('AuthProvider: Sign up successful');
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('AuthProvider: Sign up exception:', error);
+      return { error };
     }
-    
-    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting to sign in user:', email);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) {
-      console.error('Sign in error:', error);
-    } else {
-      console.log('Sign in successful');
+    console.log('AuthProvider: Sign in attempt for:', email);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('AuthProvider: Sign in error:', error);
+      } else {
+        console.log('AuthProvider: Sign in successful');
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('AuthProvider: Sign in exception:', error);
+      return { error };
     }
-    
-    return { error };
   };
 
   const signOut = async () => {
-    console.log('Attempting to sign out');
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Sign out error:', error);
-    } else {
-      console.log('Sign out successful');
+    console.log('AuthProvider: Sign out attempt');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('AuthProvider: Sign out error:', error);
+      } else {
+        console.log('AuthProvider: Sign out successful');
+      }
+    } catch (error) {
+      console.error('AuthProvider: Sign out exception:', error);
     }
   };
 
@@ -121,6 +141,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signOut,
   };
+
+  console.log('AuthProvider: Rendering with state:', { user: !!user, session: !!session, loading });
 
   return (
     <AuthContext.Provider value={value}>
