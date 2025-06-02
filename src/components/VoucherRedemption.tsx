@@ -62,7 +62,8 @@ export const VoucherRedemption: React.FC = () => {
         return;
       }
 
-      const response = data as RedemptionResponse;
+      // Safely parse the JSON response
+      const response = data as unknown as RedemptionResponse;
 
       if (response?.success) {
         toast({
