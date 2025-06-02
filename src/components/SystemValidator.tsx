@@ -82,12 +82,12 @@ export const SystemValidatorComponent: React.FC = () => {
 
             <div className="space-y-2">
               <h4 className="font-medium">Test Results</h4>
-              {Object.entries(results.results).map(([test, passed]) => (
-                <div key={test} className="flex items-center justify-between">
-                  <span className="text-sm">{test}</span>
-                  <Badge variant={passed ? 'default' : 'destructive'}>
-                    {passed ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
-                    {passed ? 'Passed' : 'Failed'}
+              {results.results.map((result: any) => (
+                <div key={result.name} className="flex items-center justify-between">
+                  <span className="text-sm">{result.name}</span>
+                  <Badge variant={result.passed ? 'default' : 'destructive'}>
+                    {result.passed ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                    {result.passed ? 'Passed' : 'Failed'}
                   </Badge>
                 </div>
               ))}
