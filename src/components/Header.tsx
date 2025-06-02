@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Menu, X, Shield } from 'lucide-react';
@@ -132,8 +131,8 @@ export const Header: React.FC = () => {
       </header>
 
       <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
       />
     </>
   );
