@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, Upload, Plus } from 'lucide-react';
 import { FileUpload } from '@/components/FileUpload';
 import { MultiDocumentUpload } from '@/components/MultiDocumentUpload';
+import { WelcomeTutorial } from '@/components/WelcomeTutorial';
 
 export interface DocumentData {
   id: string;
@@ -27,12 +28,14 @@ const Index = () => {
   
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [showMultiUpload, setShowMultiUpload] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   
   console.log('State initialized, documents:', documents);
 
   const handleDocumentUpload = (document: DocumentData) => {
     console.log('Document uploaded:', document.filename);
     setDocuments(prev => [...prev, document]);
+    setShowWelcome(false);
   };
 
   const handleDocumentRemove = (index: number) => {
@@ -45,7 +48,22 @@ const Index = () => {
     setShowMultiUpload(!showMultiUpload);
   };
 
+  const handleStartTour = () => {
+    console.log('Starting tour');
+    setShowWelcome(false);
+  };
+
+  const handleSkipTour = () => {
+    console.log('Skipping tour');
+    setShowWelcome(false);
+  };
+
   console.log('About to render JSX');
+
+  // Show welcome tutorial when first visiting and no documents uploaded
+  if (showWelcome && documents.length === 0) {
+    return <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />;
+  }
   
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -37,11 +38,7 @@ export const useErrorHandler = () => {
       toast({
         title: message,
         description: details,
-        variant: "destructive",
-        action: {
-          label: "Retry",
-          onClick: () => window.location.reload()
-        }
+        variant: "destructive"
       });
     } else {
       toast({
