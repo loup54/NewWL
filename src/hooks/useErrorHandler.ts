@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export interface AppError {
   code: string;
@@ -14,12 +14,20 @@ export const useErrorHandler = () => {
     console.error('Error handled:', error);
 
     if (typeof error === 'string') {
-      toast.error(error);
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive"
+      });
       return;
     }
 
     if (error instanceof Error) {
-      toast.error(`Something went wrong: ${error.message}`);
+      toast({
+        title: "Something went wrong",
+        description: error.message,
+        variant: "destructive"
+      });
       return;
     }
 
@@ -27,16 +35,21 @@ export const useErrorHandler = () => {
     const { message, details, recoverable = true } = error;
     
     if (recoverable) {
-      toast.error(message, {
+      toast({
+        title: message,
         description: details,
+        variant: "destructive",
         action: {
-          label: 'Retry',
+          altText: "Retry",
+          label: "Retry",
           onClick: () => window.location.reload()
         }
       });
     } else {
-      toast.error(message, {
-        description: details || 'Please refresh the page and try again.'
+      toast({
+        title: message,
+        description: details || 'Please refresh the page and try again.',
+        variant: "destructive"
       });
     }
   }, []);
