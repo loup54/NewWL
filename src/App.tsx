@@ -8,6 +8,7 @@ import config from '@/utils/environment';
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
+const ValidationDashboard = lazy(() => import('@/pages/ValidationDashboard'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/validation" element={<ValidationDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
