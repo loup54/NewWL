@@ -5,7 +5,10 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.83239b5384804243b2ddd190bf041317',
   appName: 'wordlens-theme-tracker',
   webDir: 'dist',
-  // Removed server configuration to use local build
+  server: {
+    url: 'https://83239b53-8480-4243-b2dd-d190bf041317.lovableproject.com',
+    cleartext: true
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
