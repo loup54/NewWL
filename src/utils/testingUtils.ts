@@ -1,5 +1,5 @@
 
-import { performance } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface TestScenario {
   name: string;
