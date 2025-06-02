@@ -31,7 +31,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state change:', event, session ? 'with session' : 'no session');
   if (event === 'SIGNED_IN') {
     console.log('User signed in successfully');
-  } else if (event === 'SIGN_OUT') {
+  } else if (event === 'SIGNED_OUT') {
     console.log('User signed out');
   }
 });
