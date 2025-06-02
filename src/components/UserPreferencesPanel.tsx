@@ -20,9 +20,10 @@ export const UserPreferencesPanel: React.FC = () => {
       updatePreferences({ [key]: value });
     } else {
       const [parentKey, childKey] = keys;
+      const parentValue = preferences[parentKey as keyof typeof preferences] as Record<string, any>;
       updatePreferences({
         [parentKey]: {
-          ...preferences[parentKey as keyof typeof preferences],
+          ...parentValue,
           [childKey]: value,
         },
       });

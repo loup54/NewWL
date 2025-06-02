@@ -1,4 +1,3 @@
-
 import { performanceMonitor } from '@/utils/performanceMonitor';
 
 interface TestScenario {
@@ -325,7 +324,7 @@ export const performanceMetrics = {
       domContentLoaded: navigationTiming.domContentLoadedEventEnd - navigationTiming.domContentLoadedEventStart,
       loadComplete: navigationTiming.loadEventEnd - navigationTiming.loadEventStart,
       firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
-      timeToInteractive: navigationTiming.domInteractive - navigationTiming.navigationStart,
+      timeToInteractive: navigationTiming.domInteractive - navigationTiming.fetchStart,
     };
   },
 
