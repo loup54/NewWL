@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useOfflineDocuments } from '@/hooks/useOfflineDocuments';
-import { DocumentData } from '@/pages/Index';
+import { DocumentData } from '@/types';
 import { toast } from 'sonner';
 
 interface OfflineDocumentManagerProps {

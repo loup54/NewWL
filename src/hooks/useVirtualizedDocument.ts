@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { DocumentData, Keyword } from '@/pages/Index';
+import { DocumentData, Keyword } from '@/types';
 import { cleanRTFContent } from '@/utils/contentProcessor';
 
 interface UseVirtualizedDocumentProps {

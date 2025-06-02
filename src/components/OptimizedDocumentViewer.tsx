@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { DocumentData, Keyword } from '@/pages/Index';
+import { DocumentData, Keyword } from '@/types';
 import { DocumentViewer } from './DocumentViewer';
 import { VirtualizedDocumentViewer } from './VirtualizedDocumentViewer';
 import { useLazyLoading } from '@/hooks/useLazyLoading';

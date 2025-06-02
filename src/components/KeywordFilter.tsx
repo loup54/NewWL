@@ -4,7 +4,7 @@ import { Filter, SlidersHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Keyword } from '@/pages/Index';
+import { Keyword } from '@/types';
 
 interface KeywordFilterProps {
   keywords: Keyword[];
