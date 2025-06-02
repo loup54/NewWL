@@ -1,6 +1,9 @@
 
 import React from 'react';
 
+// Re-export types for backward compatibility
+export type { Keyword, DocumentData } from '@/types';
+
 const Index = () => {
   return (
     <div style={{ 
