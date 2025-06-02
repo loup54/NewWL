@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session ? 'with session' : 'no session');
         setSession(session);
         setUser(session?.user ?? null);
@@ -69,10 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       console.log('Attempting sign up for:', email);
-      console.log('Sign up URL will be:', `https://ccmyjrgrdymwraiuauoq.supabase.co/auth/v1/signup`);
-      
-      // Clear any existing sessions first
-      await supabase.auth.signOut();
+      console.log('Using Supabase URL:', supabase.supabaseUrl);
       
       const { data, error } = await supabase.auth.signUp({
         email,
