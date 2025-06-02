@@ -2,17 +2,12 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.wordlens',
-  appName: 'WordLens Insight Engine',
+  appId: 'app.lovable.83239b5384804243b2ddd190bf041317',
+  appName: 'wordlens-theme-tracker',
   webDir: 'dist',
   server: {
-    // Production URL - update this when you have your custom domain
-    url: 'https://wordlens.app',
-    cleartext: false, // Force HTTPS in production
-    allowNavigation: [
-      'https://wordlens.app',
-      'https://ccmyjrgrdymwraiuauoq.supabase.co'
-    ]
+    url: 'https://83239b53-8480-4243-b2dd-d190bf041317.lovableproject.com?forceHideBadge=true',
+    cleartext: true
   },
   plugins: {
     SplashScreen: {
@@ -38,7 +33,7 @@ const config: CapacitorConfig = {
       resizeOnFullScreen: true
     },
     App: {
-      launchUrl: 'https://wordlens.app'
+      launchUrl: 'https://83239b53-8480-4243-b2dd-d190bf041317.lovableproject.com?forceHideBadge=true'
     }
   },
   ios: {
@@ -51,7 +46,7 @@ const config: CapacitorConfig = {
     backgroundColor: '#ffffff',
     allowMixedContent: false,
     captureInput: true,
-    webContentsDebuggingEnabled: false, // Disable in production
+    webContentsDebuggingEnabled: false,
     icon: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png',
     adaptiveIcon: {
       foreground: '/lovable-uploads/4db86d95-a95b-4027-a4b8-0ef0dbf7a9bb.png',
