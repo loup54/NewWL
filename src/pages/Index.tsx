@@ -6,6 +6,7 @@ import { FileText, Upload, Plus } from 'lucide-react';
 import { FileUpload } from '@/components/FileUpload';
 import { MultiDocumentUpload } from '@/components/MultiDocumentUpload';
 import { WelcomeTutorial } from '@/components/WelcomeTutorial';
+import { Header } from '@/components/Header';
 
 export interface DocumentData {
   id: string;
@@ -67,32 +68,7 @@ const Index = () => {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">WordLens</h1>
-                <p className="text-sm text-gray-600">Insight Engine</p>
-              </div>
-            </div>
-            
-            {documents.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={toggleMultiUpload}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                {showMultiUpload ? 'Single Upload' : 'Compare Documents'}
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <div className="max-w-4xl mx-auto p-6">
         {documents.length === 0 ? (
@@ -166,6 +142,24 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {documents.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    Document Comparison
+                    <Button
+                      variant="outline"
+                      onClick={toggleMultiUpload}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {showMultiUpload ? 'Single Upload' : 'Compare Documents'}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            )}
           </div>
         )}
       </div>

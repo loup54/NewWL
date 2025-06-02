@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
 import { PageLoader } from '@/components/LoadingStates';
+import { AuthProvider } from '@/contexts/AuthContext';
 import config from '@/utils/environment';
 
 // Lazy load pages for better performance
@@ -15,18 +16,20 @@ function App() {
   console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
   
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/validation" element={<ValidationDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-        <Toaster />
-      </div>
-    </ErrorBoundary>
+    <AuthProvider>
+      <ErrorBoundary>
+        <div className="min-h-screen bg-background">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/validation" element={<ValidationDashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          <Toaster />
+        </div>
+      </ErrorBoundary>
+    </AuthProvider>
   );
 }
 
