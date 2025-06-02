@@ -33,6 +33,7 @@ const Index = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   
   console.log('State initialized, documents:', documents);
+  console.log('showWelcome:', showWelcome, 'documents.length:', documents.length);
 
   const handleDocumentUpload = (document: DocumentData) => {
     console.log('Document uploaded:', document.filename);
@@ -64,8 +65,17 @@ const Index = () => {
 
   // Show welcome tutorial when first visiting and no documents uploaded
   if (showWelcome && documents.length === 0) {
-    return <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />;
+    console.log('Rendering WelcomeTutorial');
+    try {
+      return <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />;
+    } catch (error) {
+      console.error('Error rendering WelcomeTutorial:', error);
+      // Fallback to main content if WelcomeTutorial fails
+      setShowWelcome(false);
+    }
   }
+  
+  console.log('Rendering main content');
   
   return (
     <div className="min-h-screen bg-gray-50">
