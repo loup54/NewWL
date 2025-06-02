@@ -21,34 +21,41 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    console.error('ErrorBoundary caught error in getDerivedStateFromError:', error);
+    console.error('ErrorBoundary: Error caught:', error.message);
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary componentDidCatch - Error:', error);
-    console.error('ErrorBoundary componentDidCatch - Error Info:', errorInfo);
-    console.error('ErrorBoundary componentDidCatch - Stack:', error.stack);
+    console.error('ErrorBoundary: Component stack:', errorInfo.componentStack);
+    console.error('ErrorBoundary: Error details:', error);
+    
+    // Check for specific authentication errors
+    if (error.message.includes('dispatcher') || error.message.includes('useState')) {
+      console.error('ErrorBoundary: React hooks error detected - likely authentication context issue');
+    }
+    
     this.setState({ error, errorInfo });
   }
 
   private handleReset = () => {
-    console.log('ErrorBoundary reset clicked');
+    console.log('ErrorBoundary: Resetting error state');
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   private handleReload = () => {
-    console.log('ErrorBoundary reload clicked');
+    console.log('ErrorBoundary: Reloading application');
     window.location.reload();
   };
 
   public render() {
-    console.log('ErrorBoundary render - hasError:', this.state.hasError);
-    
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
+
+      const isAuthError = this.state.error?.message.includes('dispatcher') || 
+                         this.state.error?.message.includes('useState') ||
+                         this.state.error?.message.includes('useAuth');
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
@@ -58,38 +65,43 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Something went wrong
+                {isAuthError ? 'Authentication Error' : 'Something went wrong'}
               </h2>
               <p className="text-gray-600 text-sm">
-                An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
+                {isAuthError 
+                  ? 'There was an issue with the authentication system. Please reload the page.'
+                  : 'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.'
+                }
               </p>
               {this.state.error && (
                 <p className="text-red-600 text-xs mt-2 font-mono">
-                  Error: {this.state.error.message}
+                  {this.state.error.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-3">
-              <Button onClick={this.handleReset} className="w-full">
+              <Button onClick={this.handleReload} className="w-full">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
-              </Button>
-              <Button variant="outline" onClick={this.handleReload} className="w-full">
-                <Home className="w-4 h-4 mr-2" />
                 Reload Page
+              </Button>
+              <Button variant="outline" onClick={this.handleReset} className="w-full">
+                <Home className="w-4 h-4 mr-2" />
+                Try Again
               </Button>
             </div>
 
-            <details className="mt-6 text-left">
-              <summary className="text-sm text-gray-500 cursor-pointer">
-                Error Details
-              </summary>
-              <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                {this.state.error && this.state.error.toString()}
-                {this.state.errorInfo && this.state.errorInfo.componentStack}
-              </pre>
-            </details>
+            {process.env.NODE_ENV === 'development' && (
+              <details className="mt-6 text-left">
+                <summary className="text-sm text-gray-500 cursor-pointer">
+                  Developer Details
+                </summary>
+                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+                  {this.state.error?.stack}
+                  {this.state.errorInfo?.componentStack}
+                </pre>
+              </details>
+            )}
           </Card>
         </div>
       );

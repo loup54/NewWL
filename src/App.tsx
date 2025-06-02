@@ -16,7 +16,7 @@ const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
   console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
-  console.log('App: Component rendering');
+  console.log('App: Starting application');
   
   return (
     <ErrorBoundary>
