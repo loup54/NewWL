@@ -159,16 +159,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      // Add validation before attempting sign in
+      if (!email || !password) {
+        const validationError = new Error('Email and password are required');
+        handleAuthError(validationError);
+        return { error: validationError };
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password,
       });
       
       if (error) {
-        console.log('AuthProvider: Sign in error:', error.message);
+        console.log('AuthProvider: Sign in error:', error.message, error);
         handleAuthError(error);
       } else {
-        console.log('AuthProvider: Sign in successful');
+        console.log('AuthProvider: Sign in successful', data);
       }
       return { error };
     } catch (error) {
