@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Upload, Plus } from 'lucide-react';
@@ -25,15 +25,33 @@ export interface Keyword {
   count: number;
 }
 
+// Add immediate console log to test if JS is loading
+console.log('=== WORDLENS APP LOADING ===');
+console.log('JavaScript is executing');
+console.log('iOS version check:', navigator.userAgent);
+
 const Index = () => {
-  console.log('Index component starting render');
+  console.log('=== INDEX COMPONENT RENDER START ===');
   
   const [documents, setDocuments] = useState<DocumentData[]>([]);
   const [showMultiUpload, setShowMultiUpload] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   
-  console.log('State initialized, documents:', documents);
-  console.log('showWelcome:', showWelcome, 'documents.length:', documents.length);
+  // Add useEffect to handle component mounting and iOS compatibility
+  useEffect(() => {
+    console.log('=== INDEX COMPONENT MOUNTED ===');
+    console.log('Documents state:', documents);
+    console.log('Show welcome state:', showWelcome);
+    
+    // Add a small delay to ensure proper rendering on iOS
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      console.log('=== LOADING COMPLETE ===');
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDocumentUpload = (document: DocumentData) => {
     console.log('Document uploaded:', document.filename);
@@ -61,21 +79,30 @@ const Index = () => {
     setShowWelcome(false);
   };
 
-  console.log('About to render JSX');
+  // Show loading state while initializing
+  if (isLoading) {
+    console.log('=== RENDERING LOADING STATE ===');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading WordLens...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show welcome tutorial when first visiting and no documents uploaded
   if (showWelcome && documents.length === 0) {
-    console.log('Rendering WelcomeTutorial');
-    try {
-      return <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />;
-    } catch (error) {
-      console.error('Error rendering WelcomeTutorial:', error);
-      // Fallback to main content if WelcomeTutorial fails
-      setShowWelcome(false);
-    }
+    console.log('=== RENDERING WELCOME TUTORIAL ===');
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />
+      </div>
+    );
   }
   
-  console.log('Rendering main content');
+  console.log('=== RENDERING MAIN CONTENT ===');
   
   return (
     <div className="min-h-screen bg-gray-50">
