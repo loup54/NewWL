@@ -7,6 +7,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 console.log('Supabase client: Initializing with URL:', SUPABASE_URL);
 
+// Create a single instance to prevent multiple client warnings
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
@@ -14,7 +15,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     detectSessionInUrl: true,
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     flowType: 'pkce',
-    debug: true
+    debug: false // Reduce debug noise
   },
   global: {
     headers: {
@@ -23,16 +24,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   },
   db: {
     schema: 'public'
-  }
-});
-
-// Add error handling for auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state change:', event, session ? 'with session' : 'no session');
-  if (event === 'SIGNED_IN') {
-    console.log('User signed in successfully');
-  } else if (event === 'SIGNED_OUT') {
-    console.log('User signed out');
   }
 });
 
