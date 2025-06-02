@@ -25,124 +25,62 @@ export interface Keyword {
   count: number;
 }
 
-// Test basic JavaScript execution
-try {
-  console.log('WordLens app initializing...');
-  console.log('User agent:', navigator.userAgent);
-  console.log('Platform:', navigator.platform);
-} catch (e) {
-  // Fallback for environments where console might not be available
-  window.alert && window.alert('WordLens loading...');
-}
-
 const Index = () => {
-  // Use simpler state initialization for better iOS compatibility
   const [documents, setDocuments] = useState([]);
   const [showMultiUpload, setShowMultiUpload] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Simplified useEffect for iOS compatibility
   useEffect(() => {
-    try {
-      console.log('Index component mounted successfully');
-      
-      // Simple timeout to ensure rendering works
-      const timer = setTimeout(() => {
-        console.log('Component ready');
-      }, 50);
-      
-      return () => {
-        clearTimeout(timer);
-      };
-    } catch (error) {
-      console.error('Error in useEffect:', error);
-      setHasError(true);
-    }
+    // Simple initialization for iOS compatibility
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDocumentUpload = (document) => {
-    try {
-      console.log('Document uploaded:', document.filename);
-      setDocuments(prev => [...prev, document]);
-      setShowWelcome(false);
-    } catch (error) {
-      console.error('Error uploading document:', error);
-      setHasError(true);
-    }
+    setDocuments(prev => [...prev, document]);
+    setShowWelcome(false);
   };
 
   const handleDocumentRemove = (index) => {
-    try {
-      console.log('Removing document at index:', index);
-      setDocuments(prev => prev.filter((_, i) => i !== index));
-    } catch (error) {
-      console.error('Error removing document:', error);
-    }
+    setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
   const toggleMultiUpload = () => {
-    try {
-      console.log('Toggling multi-upload mode');
-      setShowMultiUpload(!showMultiUpload);
-    } catch (error) {
-      console.error('Error toggling multi-upload:', error);
-    }
+    setShowMultiUpload(!showMultiUpload);
   };
 
   const handleStartTour = () => {
-    try {
-      console.log('Starting tour');
-      setShowWelcome(false);
-    } catch (error) {
-      console.error('Error starting tour:', error);
-    }
+    setShowWelcome(false);
   };
 
   const handleSkipTour = () => {
-    try {
-      console.log('Skipping tour');
-      setShowWelcome(false);
-    } catch (error) {
-      console.error('Error skipping tour:', error);
-    }
+    setShowWelcome(false);
   };
 
-  // Error fallback
-  if (hasError) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">WordLens</h1>
-          <p className="text-gray-600 mb-4">Loading issue detected. Please refresh the page.</p>
-          <button 
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={() => window.location.reload()}
-          >
-            Refresh
-          </button>
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading WordLens...</p>
         </div>
       </div>
     );
   }
 
-  // Simple welcome check
+  // Welcome screen
   if (showWelcome && documents.length === 0) {
-    try {
-      console.log('Rendering welcome tutorial');
-      return (
-        <div className="min-h-screen bg-gray-50">
-          <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />
-        </div>
-      );
-    } catch (error) {
-      console.error('Error rendering welcome tutorial:', error);
-      // Fallback to main content
-      setShowWelcome(false);
-    }
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <WelcomeTutorial onStartTour={handleStartTour} onSkip={handleSkipTour} />
+      </div>
+    );
   }
-  
-  console.log('Rendering main application');
   
   return (
     <div className="min-h-screen bg-gray-50">
