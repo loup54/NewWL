@@ -23,7 +23,9 @@ const config: CapacitorConfig = {
       iosSpinnerStyle: 'small',
       spinnerColor: '#ffffff',
       splashFullScreen: true,
-      splashImmersive: true
+      splashImmersive: true,
+      splashImageSource: 'icon-512.png',
+      splashImageSourceDark: 'icon-512.png'
     },
     StatusBar: {
       style: 'dark',
@@ -42,13 +44,19 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     scrollEnabled: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    icon: 'public/icon-1024.png'
   },
   android: {
     backgroundColor: '#ffffff',
     allowMixedContent: false,
     captureInput: true,
-    webContentsDebuggingEnabled: false // Disable in production
+    webContentsDebuggingEnabled: false, // Disable in production
+    icon: 'public/icon-512.png',
+    adaptiveIcon: {
+      foreground: 'public/icon-512.png',
+      background: '#3b82f6'
+    }
   }
 };
 
