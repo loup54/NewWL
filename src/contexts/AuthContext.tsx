@@ -23,55 +23,70 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('AuthProvider rendering...');
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    console.log('AuthProvider initializing...');
-    
-    let mounted = true;
-    
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session ? 'with session' : 'no session');
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      }
-    );
+  console.log('AuthProvider state initialized', { user: !!user, session: !!session, loading });
 
-    // Then get initial session
-    const getSession = async () => {
+  useEffect(() => {
+    console.log('AuthProvider useEffect starting...');
+    
+    let isMounted = true;
+    
+    const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Setting up auth state listener...');
+        
+        // Set up auth state listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          (event, newSession) => {
+            console.log('Auth state changed:', event, newSession ? 'session exists' : 'no session');
+            if (isMounted) {
+              setSession(newSession);
+              setUser(newSession?.user ?? null);
+              setLoading(false);
+            }
+          }
+        );
+
+        console.log('Getting initial session...');
+        // Get initial session
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error('Error getting initial session:', error);
         } else {
-          console.log('Initial session:', session ? 'Found' : 'None');
-          if (mounted) {
-            setSession(session);
-            setUser(session?.user ?? null);
+          console.log('Initial session retrieved:', initialSession ? 'exists' : 'none');
+          if (isMounted) {
+            setSession(initialSession);
+            setUser(initialSession?.user ?? null);
+            setLoading(false);
           }
         }
+
+        return () => {
+          console.log('Cleaning up auth subscription');
+          subscription.unsubscribe();
+        };
       } catch (error) {
-        console.error('Error in getSession:', error);
-      } finally {
-        if (mounted) {
+        console.error('Error in auth initialization:', error);
+        if (isMounted) {
           setLoading(false);
         }
       }
     };
 
-    getSession();
+    const cleanup = initializeAuth();
 
     return () => {
-      mounted = false;
+      isMounted = false;
       console.log('AuthProvider cleanup');
-      subscription.unsubscribe();
+      cleanup.then(cleanupFn => {
+        if (cleanupFn) cleanupFn();
+      }).catch(console.error);
     };
   }, []);
 
@@ -144,7 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
   };
 
-  console.log('AuthProvider rendering with user:', user ? user.email : 'none');
+  console.log('AuthProvider about to render context provider');
 
   return (
     <AuthContext.Provider value={value}>
