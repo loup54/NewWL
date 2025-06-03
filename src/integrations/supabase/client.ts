@@ -1,6 +1,4 @@
 
-import type { Database } from './types';
-
 // Phase 1 - Completely mock Supabase client without any real client creation
 export const supabase = {
   auth: {
