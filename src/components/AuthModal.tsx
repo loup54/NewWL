@@ -4,7 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
@@ -22,21 +24,41 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
     e.preventDefault();
     setError('');
     
-    console.log('Form submitted:', { email, isSignUp });
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
+    if (isSignUp && password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
     
-    const { error } = isSignUp 
+    console.log('AuthModal: Form submitted:', { email, isSignUp });
+    
+    const { error: authError } = isSignUp 
       ? await signUp(email, password)
       : await signIn(email, password);
     
-    if (error) {
-      console.error('Auth error:', error);
-      setError(error.message);
+    if (authError) {
+      console.error('AuthModal: Auth error:', authError);
+      if (authError.message) {
+        setError(authError.message);
+      } else {
+        setError(`${isSignUp ? 'Sign up' : 'Sign in'} failed. Please try again.`);
+      }
     } else {
-      console.log('Auth success, closing modal');
+      console.log('AuthModal: Auth success, closing modal');
       onOpenChange(false);
       setEmail('');
       setPassword('');
+      setError('');
     }
+  };
+
+  const toggleMode = () => {
+    setIsSignUp(!isSignUp);
+    setError('');
   };
 
   return (
@@ -51,7 +73,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="text-red-600 text-sm">{error}</div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
           
           <div>
@@ -62,6 +87,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
+              placeholder="Enter your email"
             />
           </div>
           
@@ -73,18 +100,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
+              placeholder={isSignUp ? 'Create a password (min. 6 characters)' : 'Enter your password'}
+              minLength={isSignUp ? 6 : undefined}
             />
           </div>
           
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
+          <Button type="submit" className="w-full" disabled={loading || !email || !password}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSignUp ? 'Create Account' : 'Sign In'}
           </Button>
           
           <Button
             type="button"
             variant="ghost"
             className="w-full"
-            onClick={() => setIsSignUp(!isSignUp)}
+            onClick={toggleMode}
+            disabled={loading}
           >
             {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
           </Button>
