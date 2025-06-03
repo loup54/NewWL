@@ -1,67 +1,24 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, Gift, Loader2, AlertCircle, LogIn, Shield } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 export const VoucherPayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
   
-  // Temporarily disable auth requirement - this will be added back in later phases
+  // Completely disable auth and payment for Phase 1
   const user = null;
 
   const handlePurchaseVoucher = async () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Authentication temporarily disabled",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-      console.log('Creating secure payment session for voucher...');
-      
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { voucherType: 'premium' }
-      });
-
-      if (error) {
-        console.error('Payment error:', error);
-        toast({
-          title: "Payment Error",
-          description: error.message || "Failed to create secure payment session",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (data?.url) {
-        // Open Stripe checkout in a new tab with security measures
-        const newWindow = window.open(data.url, '_blank', 'noopener,noreferrer');
-        if (!newWindow) {
-          toast({
-            title: "Popup Blocked",
-            description: "Please allow popups and try again",
-            variant: "destructive"
-          });
-        }
-      } else {
-        throw new Error('No secure payment URL received');
-      }
-    } catch (error) {
-      console.error('Voucher purchase error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start secure payment process",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    console.log('Purchase voucher clicked - disabled in Phase 1');
+    toast({
+      title: "Feature Disabled",
+      description: "Payment functionality is disabled in Phase 1",
+      variant: "destructive"
+    });
+    return;
   };
 
   return (
@@ -91,48 +48,26 @@ export const VoucherPayment: React.FC = () => {
               </ul>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
-              <Shield className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-green-800">
-                <p className="font-medium">Secure Payment</p>
-                <p>Protected by Stripe with webhook verification</p>
-              </div>
-            </div>
-
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium">Login Required</p>
-                <p>Authentication temporarily disabled.</p>
+                <p className="font-medium">Phase 1 - Feature Disabled</p>
+                <p>Payment and authentication features are temporarily disabled.</p>
               </div>
             </div>
 
             <Button 
               onClick={handlePurchaseVoucher}
-              disabled={loading || !user}
+              disabled={true}
               className="w-full"
               size="lg"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing Securely...
-                </>
-              ) : !user ? (
-                <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In to Purchase (Disabled)
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Purchase Voucher Securely
-                </>
-              )}
+              <LogIn className="w-4 h-4 mr-2" />
+              Feature Disabled (Phase 1)
             </Button>
             
             <p className="text-xs text-center text-gray-500">
-              Secure payment powered by Stripe with webhook verification
+              Payment features will be enabled in future phases
             </p>
           </div>
         </CardContent>

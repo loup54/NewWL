@@ -14,7 +14,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
-  console.log('App: Starting without auth (Phase 1)');
+  console.log('App: Starting Phase 1 - No Auth, No Backend Calls');
   
   return (
     <ErrorBoundary>
