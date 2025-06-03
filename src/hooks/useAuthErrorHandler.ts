@@ -21,9 +21,8 @@ export const useAuthErrorHandler = () => {
       switch (error.message) {
         case 'Invalid login credentials':
         case 'Invalid credentials':
-        case 'Email not confirmed':
           title = "Login Failed";
-          description = "The email or password you entered is incorrect, or your email hasn't been verified yet. Please check your credentials and try again.";
+          description = "The email or password you entered is incorrect. Please check your credentials and try again.";
           break;
         case 'Email not confirmed':
           title = "Email Not Verified";

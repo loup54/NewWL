@@ -55,41 +55,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        console.log('AuthProvider: Getting initial session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (mounted) {
-          if (error) {
-            console.error('AuthProvider: Error getting initial session:', error);
-            handleAuthError(error);
-          } else {
-            console.log('AuthProvider: Initial session retrieved', session ? 'with user' : 'no session');
-            setSession(session);
-            setUser(session?.user ?? null);
-          }
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('AuthProvider: Exception getting initial session:', error);
-        if (mounted) {
-          handleAuthError(error);
-          setLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state change listener
+    // Set up auth state change listener first
     console.log('AuthProvider: Setting up auth state listener');
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('AuthProvider: Auth state change:', event, session ? 'with session' : 'no session');
       
       if (mounted) {
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        
+        // Only set loading to false after we've processed the auth state
+        if (event !== 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
 
         // Show appropriate feedback for auth events
         if (event === 'SIGNED_IN' && session?.user) {
@@ -112,6 +90,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       }
     });
+
+    // Get initial session after setting up the listener
+    const getInitialSession = async () => {
+      try {
+        console.log('AuthProvider: Getting initial session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (error) {
+            console.error('AuthProvider: Error getting initial session:', error);
+            // Don't show error toast for initial session check
+            setLoading(false);
+          } else {
+            console.log('AuthProvider: Initial session retrieved', session ? 'with user' : 'no session');
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('AuthProvider: Exception getting initial session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
     getInitialSession();
 
