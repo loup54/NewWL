@@ -17,8 +17,11 @@ export const useAuth = () => {
   });
 
   useEffect(() => {
+    console.log('useAuth: Setting up auth listener');
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('useAuth: Initial session check', { session: !!session, error });
       setAuthState({
         user: session?.user ?? null,
         session: session,
@@ -29,7 +32,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('useAuth: Auth state changed:', event, session?.user?.email);
         setAuthState({
           user: session?.user ?? null,
           session: session,
@@ -38,34 +41,54 @@ export const useAuth = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('useAuth: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    console.log('Attempting sign up for:', email);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    
-    console.log('Sign up result:', { data, error });
-    return { error };
+    console.log('useAuth: Attempting sign up for:', email);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      console.log('useAuth: Sign up result:', { data: !!data, error });
+      return { error };
+    } catch (err) {
+      console.error('useAuth: Sign up exception:', err);
+      return { error: err };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('Attempting sign in for:', email);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    console.log('Sign in result:', { data, error });
-    return { error };
+    console.log('useAuth: Attempting sign in for:', email);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      console.log('useAuth: Sign in result:', { data: !!data, error });
+      return { error };
+    } catch (err) {
+      console.error('useAuth: Sign in exception:', err);
+      return { error: err };
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    console.log('useAuth: Attempting sign out');
+    try {
+      const { error } = await supabase.auth.signOut();
+      console.log('useAuth: Sign out result:', { error });
+      return { error };
+    } catch (err) {
+      console.error('useAuth: Sign out exception:', err);
+      return { error: err };
+    }
   };
 
   return {
