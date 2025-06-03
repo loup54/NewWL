@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Menu, X, Shield } from 'lucide-react';
-import { SimpleAuthModal } from '@/components/SimpleAuthModal';
+import { AuthModal } from '@/components/AuthModal';
 import { UserMenu } from '@/components/UserMenu';
-import { useAuth } from '@/contexts/SimpleAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -124,7 +124,7 @@ export const Header: React.FC = () => {
         </div>
       </header>
 
-      <SimpleAuthModal
+      <AuthModal
         open={showAuthModal}
         onOpenChange={setShowAuthModal}
       />

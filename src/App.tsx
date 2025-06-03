@@ -4,10 +4,9 @@ import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
 import { PageLoader } from '@/components/LoadingStates';
-import { AuthProvider } from '@/contexts/SimpleAuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PublicRoute } from '@/components/auth/PublicRoute';
-import config from '@/utils/environment';
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
@@ -17,8 +16,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
-  console.log(`WordLens ${config.app.version} running in ${config.environment} mode`);
-  console.log('App: Starting application with simplified auth');
+  console.log('App: Starting with fresh auth setup');
   
   return (
     <ErrorBoundary>
