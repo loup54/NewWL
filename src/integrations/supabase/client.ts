@@ -1,31 +1,15 @@
 
-import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Use completely invalid URLs to prevent any connections in Phase 1
-const supabaseUrl = 'https://localhost:0';
-const supabaseAnonKey = 'invalid-key-phase-1';
-
-// Create a completely neutered client for Phase 1
-const baseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-    detectSessionInUrl: false,
-    flowType: 'implicit'
-  }
-});
-
-// Completely override the client to prevent any network calls
+// Phase 1 - Completely mock Supabase client without any real client creation
 export const supabase = {
-  ...baseClient,
   auth: {
     signInWithPassword: () => {
       console.log('Auth call blocked - Phase 1');
       return Promise.reject(new Error('Auth disabled in Phase 1'));
     },
     signUp: () => {
-      console.log('Auth call blocked - Phase 1');
+      console.log('Auth call blocked - Phase 1'); 
       return Promise.reject(new Error('Auth disabled in Phase 1'));
     },
     signOut: () => {
@@ -40,28 +24,51 @@ export const supabase = {
       console.log('getUser call blocked - Phase 1');
       return Promise.resolve({ data: { user: null }, error: null });
     },
-    onAuthStateChange: () => {
+    onAuthStateChange: (callback: any) => {
       console.log('onAuthStateChange call blocked - Phase 1');
       return { data: { subscription: { unsubscribe: () => {} } } };
     }
   },
   from: () => ({
-    select: () => Promise.reject(new Error('Database calls disabled in Phase 1')),
-    insert: () => Promise.reject(new Error('Database calls disabled in Phase 1')),
-    update: () => Promise.reject(new Error('Database calls disabled in Phase 1')),
-    delete: () => Promise.reject(new Error('Database calls disabled in Phase 1'))
+    select: () => {
+      console.log('Database select blocked - Phase 1');
+      return Promise.reject(new Error('Database calls disabled in Phase 1'));
+    },
+    insert: () => {
+      console.log('Database insert blocked - Phase 1');
+      return Promise.reject(new Error('Database calls disabled in Phase 1'));
+    },
+    update: () => {
+      console.log('Database update blocked - Phase 1');
+      return Promise.reject(new Error('Database calls disabled in Phase 1'));
+    },
+    delete: () => {
+      console.log('Database delete blocked - Phase 1');
+      return Promise.reject(new Error('Database calls disabled in Phase 1'));
+    }
   }),
-  rpc: () => Promise.reject(new Error('RPC calls disabled in Phase 1')),
+  rpc: () => {
+    console.log('RPC call blocked - Phase 1');
+    return Promise.reject(new Error('RPC calls disabled in Phase 1'));
+  },
   functions: {
-    invoke: () => Promise.reject(new Error('Function calls disabled in Phase 1'))
+    invoke: () => {
+      console.log('Function call blocked - Phase 1');
+      return Promise.reject(new Error('Function calls disabled in Phase 1'));
+    }
   }
 } as any;
 
-// Disable all auth functionality for Phase 1
-export const useAuth = () => ({
-  user: null,
-  loading: false,
-  signIn: () => Promise.reject(new Error('Auth disabled in Phase 1')),
-  signOut: () => Promise.reject(new Error('Auth disabled in Phase 1')),
-  signUp: () => Promise.reject(new Error('Auth disabled in Phase 1'))
-});
+// Also clear any existing auth state that might trigger refresh attempts
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('supabase.auth.token');
+    localStorage.removeItem('supabase.auth.refreshToken');
+    localStorage.removeItem('sb-ccmyjrgrdymwraiuauoq-auth-token');
+    sessionStorage.removeItem('supabase.auth.token');
+    sessionStorage.removeItem('supabase.auth.refreshToken');
+    console.log('Cleared any existing Supabase auth tokens from storage');
+  } catch (error) {
+    console.log('Could not clear storage:', error);
+  }
+}
