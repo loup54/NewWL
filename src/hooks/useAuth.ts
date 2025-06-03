@@ -1,4 +1,5 @@
 
+
 // Phase 1 - Authentication completely removed
 // This hook returns static values with no authentication logic
 
@@ -20,3 +21,4 @@ export const useAuth = () => {
     }
   };
 };
+
