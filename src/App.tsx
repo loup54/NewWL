@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
 import { PageLoader } from '@/components/LoadingStates';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/SimpleAuthContext';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PublicRoute } from '@/components/auth/PublicRoute';
 
@@ -16,7 +16,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
-  console.log('App: Starting with fresh auth setup');
+  console.log('App: Starting with SimpleAuth setup');
   
   return (
     <ErrorBoundary>
