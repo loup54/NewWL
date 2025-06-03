@@ -8,13 +8,14 @@ import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Settings, Activity, Gauge } from 'lucide-react';
-import { useUserRoles } from '@/hooks/useUserRoles';
 import { PageLoader } from '@/components/LoadingStates';
 
 const AdminPanel = () => {
-  const { isAdmin, loading } = useUserRoles();
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const isAdmin = false;
+  const loading = false;
 
-  console.log('AdminPanel: Checking admin access', { isAdmin, loading });
+  console.log('AdminPanel: Auth temporarily disabled', { isAdmin, loading });
 
   if (loading) {
     return (
@@ -38,7 +39,7 @@ const AdminPanel = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p>You don't have permission to access the admin panel.</p>
+              <p>Authentication temporarily disabled. Admin panel access restricted.</p>
             </CardContent>
           </Card>
         </div>

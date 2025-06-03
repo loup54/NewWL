@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,14 +6,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { authTestSuite } from '@/utils/authTestSuite';
 import { systemValidator } from '@/utils/testingUtils';
-import { useSecurityMonitor } from '@/hooks/useSecurityMonitor';
+import { securityMonitor } from '@/utils/securityMonitor';
 import { Shield, Play, CheckCircle, XCircle, AlertTriangle, BarChart3 } from 'lucide-react';
 
 export const SecurityTestDashboard: React.FC = () => {
   const [authResults, setAuthResults] = useState<any>(null);
   const [systemResults, setSystemResults] = useState<any>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const { getSecuritySummary } = useSecurityMonitor();
+
+  // Temporarily use security monitor directly instead of hook
+  const getSecuritySummary = () => securityMonitor.getSecuritySummary();
 
   const runAuthTests = async () => {
     setIsRunning(true);

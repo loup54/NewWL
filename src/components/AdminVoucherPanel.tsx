@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Gift, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 type VoucherStatus = 'active' | 'used' | 'expired';
 
@@ -31,11 +31,13 @@ export const AdminVoucherPanel: React.FC = () => {
   const [newVoucherValue, setNewVoucherValue] = useState<number>(2);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchVouchers();
   }, []);
+
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const user = null;
 
   if (!user) {
     return (
@@ -48,7 +50,7 @@ export const AdminVoucherPanel: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500">
-            Login required to view this panel.
+            Login required to view this panel. (Auth temporarily disabled)
           </p>
         </CardContent>
       </Card>

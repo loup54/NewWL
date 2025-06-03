@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Gift, CheckCircle, AlertCircle, RefreshCw, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logSecurityEvent } from '@/utils/securityMonitor';
@@ -23,8 +21,10 @@ export const VoucherRedemption: React.FC = () => {
   const [voucherCode, setVoucherCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState<{ remaining?: number; resetTime?: number }>({});
-  const { user } = useAuth();
   const { handleError } = useErrorHandler();
+
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const user = null;
 
   const validateCode = (code: string): boolean => {
     const validator = new InputValidator([commonValidations.voucherCode]);
@@ -41,7 +41,7 @@ export const VoucherRedemption: React.FC = () => {
       logSecurityEvent.voucherRedemption('anonymous', voucherCode, false, 'User not authenticated');
       toast({
         title: "Login Required",
-        description: "Please sign in to redeem a voucher",
+        description: "Authentication temporarily disabled",
         variant: "destructive"
       });
       return;
@@ -162,40 +162,23 @@ export const VoucherRedemption: React.FC = () => {
             id="code"
             placeholder="FREE-XXXXXXXX or PAID-XXXXXXXX"
             value={voucherCode}
-            onChange={handleCodeChange}
+            onChange={(e) => setVoucherCode(e.target.value)}
             className="font-mono"
             maxLength={13}
           />
-          {voucherCode && !validateCode(voucherCode) && (
-            <p className="text-sm text-red-600">
-              Invalid format. Code should be FREE-XXXXXXXX or PAID-XXXXXXXX
-            </p>
-          )}
         </div>
 
-        {!user && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium">Login Required</p>
-              <p>Please sign in to redeem voucher codes securely.</p>
-            </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-800">
+            <p className="font-medium">Login Required</p>
+            <p>Authentication temporarily disabled.</p>
           </div>
-        )}
-
-        {rateLimitInfo.remaining !== undefined && rateLimitInfo.remaining < 3 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-yellow-800">
-              <p className="font-medium">Limited Attempts Remaining</p>
-              <p>You have {rateLimitInfo.remaining} redemption attempts left.</p>
-            </div>
-          </div>
-        )}
+        </div>
 
         <Button 
           onClick={redeemVoucher}
-          disabled={!voucherCode || !user || isRedeeming || !validateCode(voucherCode)}
+          disabled={!voucherCode || !user || isRedeeming}
           className="w-full"
         >
           {isRedeeming ? (
@@ -206,7 +189,7 @@ export const VoucherRedemption: React.FC = () => {
           ) : (
             <>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Redeem Voucher
+              Redeem Voucher (Auth Disabled)
             </>
           )}
         </Button>

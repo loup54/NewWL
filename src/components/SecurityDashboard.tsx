@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,12 +14,13 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { securityMonitor, SecurityEvent } from '@/utils/securityMonitor';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const SecurityDashboard: React.FC = () => {
   const [summary, setSummary] = useState(securityMonitor.getSecuritySummary());
   const [selectedEvent, setSelectedEvent] = useState<SecurityEvent | null>(null);
-  const { user } = useAuth();
+
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const user = null;
 
   useEffect(() => {
     const interval = setInterval(() => {

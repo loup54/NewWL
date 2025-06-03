@@ -1,21 +1,24 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, Gift, Loader2, AlertCircle, LogIn, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { AuthModal } from '@/components/AuthModal';
 
 export const VoucherPayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user } = useAuth();
+  
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const user = null;
 
   const handlePurchaseVoucher = async () => {
     if (!user) {
-      setShowAuthModal(true);
+      toast({
+        title: "Login Required",
+        description: "Authentication temporarily disabled",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -97,19 +100,17 @@ export const VoucherPayment: React.FC = () => {
               </div>
             </div>
 
-            {!user && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium">Login Required</p>
-                  <p>Please sign in to purchase a voucher securely.</p>
-                </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Login Required</p>
+                <p>Authentication temporarily disabled.</p>
               </div>
-            )}
+            </div>
 
             <Button 
               onClick={handlePurchaseVoucher}
-              disabled={loading}
+              disabled={loading || !user}
               className="w-full"
               size="lg"
             >
@@ -121,7 +122,7 @@ export const VoucherPayment: React.FC = () => {
               ) : !user ? (
                 <>
                   <LogIn className="w-4 h-4 mr-2" />
-                  Sign In to Purchase
+                  Sign In to Purchase (Disabled)
                 </>
               ) : (
                 <>
@@ -137,11 +138,6 @@ export const VoucherPayment: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      <AuthModal 
-        open={showAuthModal} 
-        onOpenChange={setShowAuthModal}
-      />
     </>
   );
 };
