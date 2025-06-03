@@ -1,22 +1,22 @@
 
-// Phase 1 - Completely disabled auth hook
+// Phase 1 - Completely disabled auth hook - no sign-in required
 export const useAuth = () => {
-  console.log('useAuth called - returning disabled state for Phase 1');
+  console.log('useAuth: Phase 1 - Authentication completely bypassed');
   
   return {
     user: null,
     loading: false,
     signIn: () => {
-      console.log('Auth signIn called but disabled in Phase 1');
-      return Promise.reject(new Error('Authentication disabled in Phase 1'));
+      console.log('Auth signIn: Disabled in Phase 1');
+      return Promise.resolve({ error: null });
     },
     signOut: () => {
-      console.log('Auth signOut called but disabled in Phase 1');
-      return Promise.reject(new Error('Authentication disabled in Phase 1'));
+      console.log('Auth signOut: Disabled in Phase 1');
+      return Promise.resolve({ error: null });
     },
     signUp: () => {
-      console.log('Auth signUp called but disabled in Phase 1');
-      return Promise.reject(new Error('Authentication disabled in Phase 1'));
+      console.log('Auth signUp: Disabled in Phase 1');
+      return Promise.resolve({ error: null });
     }
   };
 };

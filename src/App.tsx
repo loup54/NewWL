@@ -14,7 +14,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
-  console.log('App: Starting Phase 1 - No Auth, No Backend Calls');
+  console.log('App: Phase 1 - No Auth Required, Direct Access');
   
   return (
     <ErrorBoundary>
@@ -22,13 +22,10 @@ function App() {
         <div className="min-h-screen bg-background">
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* All routes are now public */}
               <Route path="/" element={<Index />} />
               <Route path="/validation" element={<ValidationDashboard />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/admin" element={<AdminPanel />} />
-              
-              {/* 404 route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
