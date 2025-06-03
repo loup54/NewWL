@@ -22,7 +22,7 @@ export const Header: React.FC = () => {
             <span className="text-xl font-bold text-gray-900">WordLens</span>
           </button>
 
-          {/* Desktop Navigation - always visible now */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4">
             <Link
               to="/validation"
@@ -47,20 +47,15 @@ export const Header: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Simple placeholder for auth area */}
-          <div className="flex items-center space-x-4">
-            <div className="text-sm text-gray-500">No Auth (Phase 1)</div>
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
-          </div>
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
 
         {/* Mobile Navigation */}
