@@ -20,20 +20,7 @@ export const useSimpleAuth = () => {
   useEffect(() => {
     console.log('useSimpleAuth: Setting up auth listener');
     
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('useSimpleAuth: Auth state changed:', event, session ? 'with session' : 'no session');
-        
-        setAuthState({
-          user: session?.user ?? null,
-          session: session,
-          loading: false
-        });
-      }
-    );
-
-    // Get initial session
+    // Get initial session first
     const getInitialSession = async () => {
       try {
         console.log('useSimpleAuth: Getting initial session');
@@ -55,6 +42,19 @@ export const useSimpleAuth = () => {
         setAuthState({ user: null, session: null, loading: false });
       }
     };
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('useSimpleAuth: Auth state changed:', event, session ? 'with session' : 'no session');
+        
+        setAuthState({
+          user: session?.user ?? null,
+          session: session,
+          loading: false
+        });
+      }
+    );
 
     getInitialSession();
 
@@ -84,10 +84,11 @@ export const useSimpleAuth = () => {
           description: error.message,
           variant: "destructive"
         });
+        setAuthState(prev => ({ ...prev, loading: false }));
         return { error };
       }
       
-      console.log('useSimpleAuth: Sign up successful');
+      console.log('useSimpleAuth: Sign up successful', data);
       if (data.user && !data.session) {
         toast({
           title: "Check your email",
@@ -100,6 +101,7 @@ export const useSimpleAuth = () => {
         });
       }
       
+      setAuthState(prev => ({ ...prev, loading: false }));
       return { error: null };
     } catch (err) {
       console.error('useSimpleAuth: Sign up exception:', err);
@@ -109,9 +111,8 @@ export const useSimpleAuth = () => {
         description: error.message,
         variant: "destructive"
       });
-      return { error };
-    } finally {
       setAuthState(prev => ({ ...prev, loading: false }));
+      return { error };
     }
   };
 
@@ -132,15 +133,17 @@ export const useSimpleAuth = () => {
           description: error.message,
           variant: "destructive"
         });
+        setAuthState(prev => ({ ...prev, loading: false }));
         return { error };
       }
       
-      console.log('useSimpleAuth: Sign in successful');
+      console.log('useSimpleAuth: Sign in successful', data);
       toast({
         title: "Welcome!",
         description: "Signed in successfully",
       });
       
+      setAuthState(prev => ({ ...prev, loading: false }));
       return { error: null };
     } catch (err) {
       console.error('useSimpleAuth: Sign in exception:', err);
@@ -150,9 +153,8 @@ export const useSimpleAuth = () => {
         description: error.message,
         variant: "destructive"
       });
-      return { error };
-    } finally {
       setAuthState(prev => ({ ...prev, loading: false }));
+      return { error };
     }
   };
 
@@ -177,6 +179,7 @@ export const useSimpleAuth = () => {
           description: "You've been signed out successfully",
         });
       }
+      setAuthState(prev => ({ ...prev, loading: false }));
     } catch (err) {
       console.error('useSimpleAuth: Sign out exception:', err);
       toast({
@@ -184,7 +187,6 @@ export const useSimpleAuth = () => {
         description: "An unexpected error occurred",
         variant: "destructive"
       });
-    } finally {
       setAuthState(prev => ({ ...prev, loading: false }));
     }
   };
