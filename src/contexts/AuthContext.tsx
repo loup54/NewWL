@@ -100,7 +100,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (mounted) {
           if (error) {
             console.error('AuthProvider: Error getting initial session:', error);
-            // Don't show error toast for initial session check
+            // Check if this is a connection error
+            if (error.message?.includes('Failed to fetch') || error.message?.includes('Load failed')) {
+              toast({
+                title: "Connection Error",
+                description: "Unable to connect to authentication service. Please check your internet connection.",
+                variant: "destructive"
+              });
+            }
             setLoading(false);
           } else {
             console.log('AuthProvider: Initial session retrieved', session ? 'with user' : 'no session');
@@ -112,6 +119,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('AuthProvider: Exception getting initial session:', error);
         if (mounted) {
+          // Check if this is a network error
+          if (error instanceof TypeError && error.message?.includes('Failed to fetch')) {
+            toast({
+              title: "Network Error",
+              description: "Unable to reach authentication service. Please check your connection and try again.",
+              variant: "destructive"
+            });
+          }
           setLoading(false);
         }
       }
@@ -184,6 +199,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { error };
     } catch (error) {
       console.error('AuthProvider: Sign in exception:', error);
+      // Check if this is a network/connection error
+      if (error instanceof TypeError && error.message?.includes('Failed to fetch')) {
+        const networkError = new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
+        handleAuthError(networkError);
+        return { error: networkError };
+      }
       handleAuthError(error);
       return { error };
     } finally {
