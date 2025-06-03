@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SimpleAuthContext';
 import { User, LogOut, Settings, Gift } from 'lucide-react';
 import { VoucherRedemption } from '@/components/VoucherRedemption';
 
