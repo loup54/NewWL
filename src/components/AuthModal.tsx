@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,6 +40,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
   }, [open, rememberedEmail, email]);
 
   const validateForm = () => {
+    console.log('AuthModal: Validating form', { email, passwordLength: password.length });
+    
     if (!email.trim()) {
       setLocalError('Email is required');
       return false;
@@ -62,11 +64,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log('AuthModal: Sign in attempt started');
+    
+    if (!validateForm()) {
+      console.log('AuthModal: Form validation failed');
+      return;
+    }
 
+    setLocalError('');
+    console.log('AuthModal: Calling signIn with email:', email);
+    
     const { error } = await signIn(email, password);
     
-    if (!error) {
+    if (error) {
+      console.error('AuthModal: Sign in failed:', error);
+      setLocalError(error.message || 'Sign in failed. Please try again.');
+    } else {
+      console.log('AuthModal: Sign in successful');
       saveEmailIfRemembered(email);
       onOpenChange(false);
       setEmail('');
@@ -77,13 +91,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log('AuthModal: Sign up attempt started');
+    
+    if (!validateForm()) {
+      console.log('AuthModal: Form validation failed');
+      return;
+    }
 
+    setLocalError('');
+    console.log('AuthModal: Calling signUp with email:', email);
+    
     const { error } = await signUp(email, password);
     
-    if (!error) {
+    if (error) {
+      console.error('AuthModal: Sign up failed:', error);
+      setLocalError(error.message || 'Sign up failed. Please try again.');
+    } else {
+      console.log('AuthModal: Sign up successful');
       saveEmailIfRemembered(email);
-      onOpenChange(false);
+      // Don't close modal immediately for sign up - user might need to verify email
       setEmail('');
       setPassword('');
       setLocalError('');
@@ -106,6 +132,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Email Verification Required</DialogTitle>
+            <DialogDescription>
+              Please check your email to verify your account.
+            </DialogDescription>
           </DialogHeader>
           <EmailVerification />
         </DialogContent>
@@ -118,6 +147,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Welcome to WordLens</DialogTitle>
+          <DialogDescription>
+            Sign in to your account or create a new one to get started.
+          </DialogDescription>
         </DialogHeader>
         
         {localError && (
