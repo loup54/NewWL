@@ -20,11 +20,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, loading, onS
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`AuthForm: ${mode} attempt started`);
     setLocalError('');
     
     if (!email || !password) {
-      console.log('AuthForm: Missing email or password');
       setLocalError('Please enter both email and password');
       return;
     }
@@ -36,7 +34,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, loading, onS
     
     const { error } = await onSubmit(email, password);
     if (!error) {
-      console.log(`AuthForm: ${mode} successful`);
       setEmail('');
       setPassword('');
       setLocalError('');

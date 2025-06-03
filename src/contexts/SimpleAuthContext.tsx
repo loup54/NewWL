@@ -29,8 +29,6 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useSimpleAuth();
 
-  console.log('AuthProvider: Rendering with user:', auth.user ? auth.user.email : 'none', 'loading:', auth.loading);
-
   return (
     <AuthContext.Provider value={auth}>
       {children}

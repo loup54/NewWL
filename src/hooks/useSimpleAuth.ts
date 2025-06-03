@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -18,36 +18,24 @@ export const useSimpleAuth = () => {
   });
 
   useEffect(() => {
-    console.log('useSimpleAuth: Setting up auth listener');
-    
-    // Get initial session first
+    // Get initial session
     const getInitialSession = async () => {
       try {
-        console.log('useSimpleAuth: Getting initial session');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('useSimpleAuth: Error getting session:', error);
-          setAuthState({ user: null, session: null, loading: false });
-        } else {
-          console.log('useSimpleAuth: Initial session:', session ? 'found' : 'none');
-          setAuthState({
-            user: session?.user ?? null,
-            session: session,
-            loading: false
-          });
-        }
-      } catch (err) {
-        console.error('useSimpleAuth: Exception getting session:', err);
+        const { data: { session } } = await supabase.auth.getSession();
+        setAuthState({
+          user: session?.user ?? null,
+          session: session,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error getting session:', error);
         setAuthState({ user: null, session: null, loading: false });
       }
     };
 
-    // Set up auth state listener
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('useSimpleAuth: Auth state changed:', event, session ? 'with session' : 'no session');
-        
+      (event, session) => {
         setAuthState({
           user: session?.user ?? null,
           session: session,
@@ -58,27 +46,19 @@ export const useSimpleAuth = () => {
 
     getInitialSession();
 
-    return () => {
-      console.log('useSimpleAuth: Cleaning up auth listener');
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    console.log('useSimpleAuth: Sign up attempt for:', email);
     setAuthState(prev => ({ ...prev, loading: true }));
     
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`
-        }
       });
       
       if (error) {
-        console.error('useSimpleAuth: Sign up error:', error);
         toast({
           title: "Sign up failed",
           description: error.message,
@@ -88,24 +68,17 @@ export const useSimpleAuth = () => {
         return { error };
       }
       
-      console.log('useSimpleAuth: Sign up successful', data);
       if (data.user && !data.session) {
         toast({
           title: "Check your email",
           description: "Please check your email to confirm your account",
-        });
-      } else {
-        toast({
-          title: "Success!",
-          description: "Account created successfully",
         });
       }
       
       setAuthState(prev => ({ ...prev, loading: false }));
       return { error: null };
     } catch (err) {
-      console.error('useSimpleAuth: Sign up exception:', err);
-      const error = new Error('An unexpected error occurred during sign up');
+      const error = new Error('Sign up failed');
       toast({
         title: "Sign up failed",
         description: error.message,
@@ -117,7 +90,6 @@ export const useSimpleAuth = () => {
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('useSimpleAuth: Sign in attempt for:', email);
     setAuthState(prev => ({ ...prev, loading: true }));
     
     try {
@@ -127,7 +99,6 @@ export const useSimpleAuth = () => {
       });
       
       if (error) {
-        console.error('useSimpleAuth: Sign in error:', error);
         toast({
           title: "Sign in failed",
           description: error.message,
@@ -137,7 +108,6 @@ export const useSimpleAuth = () => {
         return { error };
       }
       
-      console.log('useSimpleAuth: Sign in successful', data);
       toast({
         title: "Welcome!",
         description: "Signed in successfully",
@@ -146,8 +116,7 @@ export const useSimpleAuth = () => {
       setAuthState(prev => ({ ...prev, loading: false }));
       return { error: null };
     } catch (err) {
-      console.error('useSimpleAuth: Sign in exception:', err);
-      const error = new Error('An unexpected error occurred during sign in');
+      const error = new Error('Sign in failed');
       toast({
         title: "Sign in failed",
         description: error.message,
@@ -159,35 +128,26 @@ export const useSimpleAuth = () => {
   };
 
   const signOut = async () => {
-    console.log('useSimpleAuth: Sign out attempt');
-    setAuthState(prev => ({ ...prev, loading: true }));
-    
     try {
       const { error } = await supabase.auth.signOut();
-      
       if (error) {
-        console.error('useSimpleAuth: Sign out error:', error);
         toast({
           title: "Sign out failed",
           description: error.message,
           variant: "destructive"
         });
       } else {
-        console.log('useSimpleAuth: Sign out successful');
         toast({
           title: "Signed out",
           description: "You've been signed out successfully",
         });
       }
-      setAuthState(prev => ({ ...prev, loading: false }));
     } catch (err) {
-      console.error('useSimpleAuth: Sign out exception:', err);
       toast({
         title: "Sign out failed",
         description: "An unexpected error occurred",
         variant: "destructive"
       });
-      setAuthState(prev => ({ ...prev, loading: false }));
     }
   };
 
