@@ -24,6 +24,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
     e.preventDefault();
     setError('');
     
+    console.log('AuthModal: Attempting auth with:', { email, isSignUp });
+    
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
@@ -34,19 +36,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }) => {
       return;
     }
     
-    console.log('AuthModal: Form submitted:', { email, isSignUp });
-    
     const { error: authError } = isSignUp 
       ? await signUp(email, password)
       : await signIn(email, password);
     
     if (authError) {
       console.error('AuthModal: Auth error:', authError);
-      if (authError.message) {
-        setError(authError.message);
-      } else {
-        setError(`${isSignUp ? 'Sign up' : 'Sign in'} failed. Please try again.`);
-      }
+      setError(authError.message || `${isSignUp ? 'Sign up' : 'Sign in'} failed. Please try again.`);
     } else {
       console.log('AuthModal: Auth success, closing modal');
       onOpenChange(false);
