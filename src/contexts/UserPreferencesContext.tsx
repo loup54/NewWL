@@ -61,7 +61,8 @@ export const UserPreferencesProvider: React.FC<{ children: ReactNode }> = ({ chi
     try {
       const savedPreferences = localStorage.getItem('userPreferences');
       if (savedPreferences) {
-        setPreferences({ ...defaultPreferences, ...JSON.parse(savedPreferences) });
+        const parsed = JSON.parse(savedPreferences);
+        setPreferences({ ...defaultPreferences, ...parsed });
       }
     } catch (error) {
       console.error('Failed to load user preferences:', error);
@@ -71,14 +72,17 @@ export const UserPreferencesProvider: React.FC<{ children: ReactNode }> = ({ chi
   }, []);
 
   const updatePreferences = (updates: Partial<UserPreferences>) => {
-    const newPreferences = { ...preferences, ...updates };
-    setPreferences(newPreferences);
-    
-    try {
-      localStorage.setItem('userPreferences', JSON.stringify(newPreferences));
-    } catch (error) {
-      console.error('Failed to save user preferences:', error);
-    }
+    setPreferences(prev => {
+      const newPreferences = { ...prev, ...updates };
+      
+      try {
+        localStorage.setItem('userPreferences', JSON.stringify(newPreferences));
+      } catch (error) {
+        console.error('Failed to save user preferences:', error);
+      }
+      
+      return newPreferences;
+    });
   };
 
   const resetPreferences = () => {
