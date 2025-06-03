@@ -20,8 +20,16 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('AuthModal: Sign in attempt started');
+    
+    if (!email || !password) {
+      console.log('AuthModal: Missing email or password');
+      return;
+    }
+    
     const { error } = await signIn(email, password);
     if (!error) {
+      console.log('AuthModal: Sign in successful, closing modal');
       onOpenChange(false);
       setEmail('');
       setPassword('');
@@ -30,8 +38,16 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('AuthModal: Sign up attempt started');
+    
+    if (!email || !password) {
+      console.log('AuthModal: Missing email or password');
+      return;
+    }
+    
     const { error } = await signUp(email, password);
     if (!error) {
+      console.log('AuthModal: Sign up successful, closing modal');
       onOpenChange(false);
       setEmail('');
       setPassword('');
@@ -62,6 +78,7 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
+                  placeholder="Enter your email"
                 />
               </div>
               
@@ -74,10 +91,11 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
+                  placeholder="Enter your password"
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || !email || !password}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
@@ -95,6 +113,7 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
+                  placeholder="Enter your email"
                 />
               </div>
               
@@ -107,10 +126,11 @@ export const SimpleAuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange }
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
+                  placeholder="Create a password"
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || !email || !password}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Account
               </Button>

@@ -31,10 +31,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('SimpleAuthContext: Initializing auth state');
+    
     // Get initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      console.log('SimpleAuthContext: Getting initial session');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('SimpleAuthContext: Error getting session:', error);
+      } else {
+        console.log('SimpleAuthContext: Initial session:', session ? 'found' : 'none');
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     };
 
@@ -42,26 +51,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('SimpleAuthContext: Auth state changed:', event, session ? 'with session' : 'no session');
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('SimpleAuthContext: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
+    console.log('SimpleAuthContext: Sign up attempt for:', email);
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
     });
     
     if (error) {
+      console.error('SimpleAuthContext: Sign up error:', error);
       toast({
         title: "Sign up failed",
         description: error.message,
         variant: "destructive"
       });
     } else {
+      console.log('SimpleAuthContext: Sign up successful');
       toast({
         title: "Success!",
         description: "Account created successfully",
@@ -72,18 +89,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('SimpleAuthContext: Sign in attempt for:', email);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
     if (error) {
+      console.error('SimpleAuthContext: Sign in error:', error);
       toast({
         title: "Sign in failed",
         description: error.message,
         variant: "destructive"
       });
     } else {
+      console.log('SimpleAuthContext: Sign in successful');
       toast({
         title: "Welcome!",
         description: "Signed in successfully",
@@ -94,8 +115,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signOut = async () => {
+    console.log('SimpleAuthContext: Sign out attempt');
+    
     const { error } = await supabase.auth.signOut();
-    if (!error) {
+    
+    if (error) {
+      console.error('SimpleAuthContext: Sign out error:', error);
+    } else {
+      console.log('SimpleAuthContext: Sign out successful');
       toast({
         title: "Signed out",
         description: "You've been signed out successfully",
@@ -110,6 +137,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signOut,
   };
+
+  console.log('SimpleAuthContext: Rendering with user:', user ? user.email : 'none', 'loading:', loading);
 
   return (
     <AuthContext.Provider value={value}>
