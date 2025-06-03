@@ -21,7 +21,7 @@ const Index = () => {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const fileUploadRef = useRef<HTMLInputElement>(null);
 
-  console.log('Index: Direct access enabled - no authentication required');
+  console.log('Index: Rendering main app without any authentication checks');
 
   const handleDocumentUpload = useCallback((uploadedDocument: DocumentData) => {
     console.log('Document uploaded successfully:', uploadedDocument.filename);
@@ -82,8 +82,8 @@ const Index = () => {
                 Advanced Document Analysis & Keyword Tracking
               </p>
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                <p className="font-semibold">✅ Direct Access Enabled</p>
-                <p className="text-sm">Upload any document and start analyzing immediately - no login required!</p>
+                <p className="font-semibold">✅ Ready to Use - No Login Required</p>
+                <p className="text-sm">Start uploading and analyzing documents immediately!</p>
               </div>
             </div>
             
@@ -94,7 +94,7 @@ const Index = () => {
             
             <div className="mt-8 text-center">
               <p className="text-gray-500 text-sm">
-                Upload a document to begin analysis and keyword tracking
+                Upload a PDF, DOCX, or TXT file to begin keyword analysis
               </p>
             </div>
           </div>

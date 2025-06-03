@@ -14,7 +14,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
-  console.log('App: Phase 1 - Loading directly without any authentication');
+  console.log('App: Starting without any authentication - all features enabled');
   
   return (
     <ErrorBoundary>
