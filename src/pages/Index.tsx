@@ -21,7 +21,7 @@ const Index = () => {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const fileUploadRef = useRef<HTMLInputElement>(null);
 
-  console.log('Index: Rendering main app without any authentication checks');
+  console.log('Index: Rendering main app with direct access - no authentication required');
 
   const handleDocumentUpload = useCallback((uploadedDocument: DocumentData) => {
     console.log('Document uploaded successfully:', uploadedDocument.filename);
@@ -76,14 +76,14 @@ const Index = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                WordLens
+                WordLens - Document Analysis Tool
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Advanced Document Analysis & Keyword Tracking
+                Advanced Document Analysis & Keyword Tracking - Ready to Use!
               </p>
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                <p className="font-semibold">✅ Ready to Use - No Login Required</p>
-                <p className="text-sm">Start uploading and analyzing documents immediately!</p>
+                <p className="font-semibold">✅ Full Access Available - No Login Required</p>
+                <p className="text-sm">Upload documents and start analyzing immediately!</p>
               </div>
             </div>
             
