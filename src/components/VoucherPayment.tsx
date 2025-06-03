@@ -7,7 +7,6 @@ import { toast } from '@/hooks/use-toast';
 
 export const VoucherPayment: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   
   // Temporarily disable auth requirement - this will be added back in later phases
   const user = null;
