@@ -21,10 +21,10 @@ const Index = () => {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const fileUploadRef = useRef<HTMLInputElement>(null);
 
-  console.log('Index: Loading without authentication - Phase 1');
+  console.log('Index: Direct access enabled - no authentication required');
 
   const handleDocumentUpload = useCallback((uploadedDocument: DocumentData) => {
-    console.log('Document uploaded:', uploadedDocument.filename);
+    console.log('Document uploaded successfully:', uploadedDocument.filename);
     setDocument(uploadedDocument);
     setKeywords([]);
     setKeywordCounts({});
@@ -40,12 +40,17 @@ const Index = () => {
       count: 0
     };
     setKeywords(prev => [...prev, newKeyword]);
+    toast.success(`Keyword "${word}" added successfully!`);
   }, []);
 
   const handleRemoveKeyword = useCallback((id: string) => {
-    console.log('Removing keyword:', id);
+    const keywordToRemove = keywords.find(k => k.id === id);
+    console.log('Removing keyword:', keywordToRemove?.word);
     setKeywords(prev => prev.filter(keyword => keyword.id !== id));
-  }, []);
+    if (keywordToRemove) {
+      toast.success(`Keyword "${keywordToRemove.word}" removed`);
+    }
+  }, [keywords]);
 
   const handleKeywordCountsUpdate = useCallback((counts: Record<string, number>) => {
     console.log('Updating keyword counts:', counts);
@@ -77,8 +82,8 @@ const Index = () => {
                 Advanced Document Analysis & Keyword Tracking
               </p>
               <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                <p className="font-semibold">✅ Phase 1 - No Login Required</p>
-                <p className="text-sm">Upload any document and start analyzing immediately!</p>
+                <p className="font-semibold">✅ Direct Access Enabled</p>
+                <p className="text-sm">Upload any document and start analyzing immediately - no login required!</p>
               </div>
             </div>
             
@@ -115,6 +120,7 @@ const Index = () => {
                       setDocument(null);
                       setKeywords([]);
                       setKeywordCounts({});
+                      toast.success('Document cleared');
                     }}
                     className="w-full text-xs text-blue-600 hover:text-blue-800 underline"
                   >

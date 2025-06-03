@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('Main: Phase 1 - Starting app without any authentication requirements');
+console.log('Main: Starting WordLens app with direct access - no authentication required');
 
 const queryClient = new QueryClient({
   defaultOptions: {
