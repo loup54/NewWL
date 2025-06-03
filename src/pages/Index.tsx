@@ -21,7 +21,10 @@ const Index = () => {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const fileUploadRef = useRef<HTMLInputElement>(null);
 
+  console.log('Index: Loading without authentication - Phase 1');
+
   const handleDocumentUpload = useCallback((uploadedDocument: DocumentData) => {
+    console.log('Document uploaded:', uploadedDocument.filename);
     setDocument(uploadedDocument);
     setKeywords([]);
     setKeywordCounts({});
@@ -29,6 +32,7 @@ const Index = () => {
   }, []);
 
   const handleAddKeyword = useCallback((word: string, color: string) => {
+    console.log('Adding keyword:', word);
     const newKeyword: Keyword = {
       id: Date.now().toString(),
       word,
@@ -39,10 +43,12 @@ const Index = () => {
   }, []);
 
   const handleRemoveKeyword = useCallback((id: string) => {
+    console.log('Removing keyword:', id);
     setKeywords(prev => prev.filter(keyword => keyword.id !== id));
   }, []);
 
   const handleKeywordCountsUpdate = useCallback((counts: Record<string, number>) => {
+    console.log('Updating keyword counts:', counts);
     setKeywordCounts(counts);
     
     // Update keyword counts in the keywords array
@@ -70,6 +76,10 @@ const Index = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Advanced Document Analysis & Keyword Tracking
               </p>
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <p className="font-semibold">✅ Phase 1 - No Login Required</p>
+                <p className="text-sm">Upload any document and start analyzing immediately!</p>
+              </div>
             </div>
             
             <FileUpload 
@@ -101,6 +111,7 @@ const Index = () => {
                   </p>
                   <button
                     onClick={() => {
+                      console.log('Resetting document');
                       setDocument(null);
                       setKeywords([]);
                       setKeywordCounts({});
