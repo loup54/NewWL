@@ -6,16 +6,16 @@ export const useAuth = () => {
   return {
     user: null,
     loading: false,
-    signIn: (email?: string, password?: string) => {
-      console.log('Auth signIn called but disabled in Phase 1', { email });
+    signIn: () => {
+      console.log('Auth signIn called but disabled in Phase 1');
       return Promise.reject(new Error('Authentication disabled in Phase 1'));
     },
     signOut: () => {
       console.log('Auth signOut called but disabled in Phase 1');
       return Promise.reject(new Error('Authentication disabled in Phase 1'));
     },
-    signUp: (email?: string, password?: string) => {
-      console.log('Auth signUp called but disabled in Phase 1', { email });
+    signUp: () => {
+      console.log('Auth signUp called but disabled in Phase 1');
       return Promise.reject(new Error('Authentication disabled in Phase 1'));
     }
   };
