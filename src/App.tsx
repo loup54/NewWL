@@ -1,22 +1,15 @@
 import React, { Suspense, lazy } from 'react';
-=======
-
-import { Suspense, lazy } from 'react';
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster } from '@/components/ui/toaster';
 import { PageLoader } from '@/components/LoadingStates';
-<<<<<<< HEAD
 import { AuthProvider } from '@/contexts/AuthContext';
 import config from '@/utils/environment';
 import { Header } from './components/Header';
 import DocumentAnalysisPage from './pages/DocumentAnalysisPage';
 import { DocumentComparisonPage } from './pages/DocumentComparisonPage';
 import { SupabaseTest } from './components/SupabaseTest';
-=======
 import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 
 // Lazy load pages for better performance
 const Index = lazy(() => import('@/pages/Index'));
