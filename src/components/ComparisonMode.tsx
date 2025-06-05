@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { DocumentData, Keyword } from '@/pages/Index';
+import { DocumentData, Keyword } from '@/types';
 import { MultiDocumentUpload } from './MultiDocumentUpload';
 import { DocumentComparison } from './DocumentComparison';
 import { KeywordManager } from './KeywordManager';

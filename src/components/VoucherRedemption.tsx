@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Gift, CheckCircle, AlertCircle, RefreshCw, Shield } from 'lucide-react';
+import { Gift, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+<<<<<<< HEAD
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -17,132 +18,20 @@ interface RedemptionResponse {
   value?: number;
   error?: string;
 }
+=======
+>>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 
 export const VoucherRedemption: React.FC = () => {
   const [voucherCode, setVoucherCode] = useState('');
-  const [isRedeeming, setIsRedeeming] = useState(false);
-  const [rateLimitInfo, setRateLimitInfo] = useState<{ remaining?: number; resetTime?: number }>({});
-  const { user } = useAuth();
-  const { handleError } = useErrorHandler();
-
-  const validateCode = (code: string): boolean => {
-    const validator = new InputValidator([commonValidations.voucherCode]);
-    const errors = validator.validate({ code });
-    return errors.length === 0;
-  };
-
-  const sanitizeCode = (code: string): string => {
-    return sanitizeInput.voucherCode(code);
-  };
 
   const redeemVoucher = async () => {
-    if (!user) {
-      logSecurityEvent.voucherRedemption('anonymous', voucherCode, false, 'User not authenticated');
-      toast({
-        title: "Login Required",
-        description: "Please sign in to redeem a voucher",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const sanitizedCode = sanitizeCode(voucherCode);
-    
-    // Validate input
-    const validator = new InputValidator([commonValidations.voucherCode]);
-    const validationErrors = validator.validate({ code: sanitizedCode });
-    
-    if (validationErrors.length > 0) {
-      logSecurityEvent.validationFailure(user.id, 'voucherCode', sanitizedCode, validationErrors[0].message);
-      toast({
-        title: "Invalid Code Format",
-        description: "Please enter a valid voucher code (e.g., FREE-XXXXXXXX)",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check rate limit
-    const rateLimitResult = rateLimiters.voucherRedemption.checkLimit(user.id);
-    if (!rateLimitResult.allowed) {
-      logSecurityEvent.rateLimitExceeded(user.id, 'voucher_redemption', 5);
-      setRateLimitInfo({ 
-        remaining: rateLimitResult.remaining,
-        resetTime: rateLimitResult.resetTime 
-      });
-      toast({
-        title: "Too Many Attempts", 
-        description: "Please wait before trying again",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setRateLimitInfo({ remaining: rateLimitResult.remaining });
-    setIsRedeeming(true);
-    
-    try {
-      console.log('Attempting to redeem voucher with enhanced security checks');
-      
-      const { data, error } = await supabase.rpc('redeem_voucher_code', {
-        _code: sanitizedCode,
-        _user_id: user.id
-      });
-
-      if (error) {
-        console.error('Redemption error:', error);
-        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, error.message);
-        
-        // Handle specific error types
-        if (error.message?.includes('rate limit')) {
-          toast({
-            title: "Too Many Attempts", 
-            description: "Please wait before trying again",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Redemption Failed", 
-            description: "Failed to redeem voucher code",
-            variant: "destructive"
-          });
-        }
-        return;
-      }
-
-      // Safely parse the JSON response
-      const response = data as unknown as RedemptionResponse;
-
-      if (response?.success) {
-        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, true);
-        toast({
-          title: "Success!",
-          description: `Voucher redeemed successfully! You received $${response.value} in premium access.`,
-        });
-        setVoucherCode('');
-        setRateLimitInfo({});
-      } else {
-        const errorMessage = response?.error || "This code may have already been used or is invalid";
-        logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, errorMessage);
-        
-        toast({
-          title: "Redemption Failed",
-          description: errorMessage,
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Voucher redemption error:', error);
-      logSecurityEvent.voucherRedemption(user.id, sanitizedCode, false, error instanceof Error ? error.message : 'Unknown error');
-      handleError(error instanceof Error ? error : new Error('Failed to redeem voucher code'));
-    } finally {
-      setIsRedeeming(false);
-    }
-  };
-
-  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitized = sanitizeCode(e.target.value);
-    setVoucherCode(sanitized);
+    console.log('Redeem voucher clicked - disabled in Phase 1');
+    toast({
+      title: "Feature Disabled",
+      description: "Voucher redemption is disabled in Phase 1",
+      variant: "destructive"
+    });
+    return;
   };
 
   return (
@@ -161,53 +50,27 @@ export const VoucherRedemption: React.FC = () => {
             id="code"
             placeholder="FREE-XXXXXXXX or PAID-XXXXXXXX"
             value={voucherCode}
-            onChange={handleCodeChange}
+            onChange={(e) => setVoucherCode(e.target.value)}
             className="font-mono"
             maxLength={13}
           />
-          {voucherCode && !validateCode(voucherCode) && (
-            <p className="text-sm text-red-600">
-              Invalid format. Code should be FREE-XXXXXXXX or PAID-XXXXXXXX
-            </p>
-          )}
         </div>
 
-        {!user && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium">Login Required</p>
-              <p>Please sign in to redeem voucher codes securely.</p>
-            </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-blue-800">
+            <p className="font-medium">Phase 1 - Feature Disabled</p>
+            <p>Voucher redemption is temporarily disabled.</p>
           </div>
-        )}
-
-        {rateLimitInfo.remaining !== undefined && rateLimitInfo.remaining < 3 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-yellow-800">
-              <p className="font-medium">Limited Attempts Remaining</p>
-              <p>You have {rateLimitInfo.remaining} redemption attempts left.</p>
-            </div>
-          </div>
-        )}
+        </div>
 
         <Button 
           onClick={redeemVoucher}
-          disabled={!voucherCode || !user || isRedeeming || !validateCode(voucherCode)}
+          disabled={true}
           className="w-full"
         >
-          {isRedeeming ? (
-            <>
-              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-              Redeeming Securely...
-            </>
-          ) : (
-            <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Redeem Voucher
-            </>
-          )}
+          <CheckCircle className="w-4 h-4 mr-2" />
+          Feature Disabled (Phase 1)
         </Button>
 
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">

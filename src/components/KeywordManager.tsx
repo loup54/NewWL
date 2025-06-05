@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, forwardRef } from 'react';
 import { Plus, X, Eye, EyeOff, Palette, Lightbulb, Tag, FileText, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Keyword } from '@/pages/Index';
+import { Keyword } from '@/types';
 import { getKeywordSuggestions, keywordCategories } from '@/utils/keywordSuggestions';
 import { getAdvancedKeywordSuggestions } from '@/utils/advancedKeywordSuggestions';
 import { DocumentTemplateSelector } from './DocumentTemplateSelector';

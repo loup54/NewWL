@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { Settings, Palette, Globe, Bell, Shield, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -14,20 +12,14 @@ import { toast } from '@/hooks/use-toast';
 export const UserPreferencesPanel: React.FC = () => {
   const { preferences, updatePreferences, resetPreferences, isLoading } = useUserPreferences();
 
-  const handlePreferenceChange = (key: string, value: any) => {
-    const keys = key.split('.');
-    if (keys.length === 1) {
-      updatePreferences({ [key]: value });
-    } else {
-      const [parentKey, childKey] = keys;
-      const parentValue = preferences[parentKey as keyof typeof preferences] as Record<string, any>;
-      updatePreferences({
-        [parentKey]: {
-          ...parentValue,
-          [childKey]: value,
-        },
-      });
-    }
+  const handleNestedPreferenceChange = (parentKey: keyof typeof preferences, childKey: string, value: any) => {
+    const parentValue = preferences[parentKey] as Record<string, any>;
+    updatePreferences({
+      [parentKey]: {
+        ...parentValue,
+        [childKey]: value,
+      },
+    });
   };
 
   const handleReset = () => {
@@ -76,7 +68,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Label htmlFor="theme">Theme</Label>
               <Select
                 value={preferences.theme}
-                onValueChange={(value) => handlePreferenceChange('theme', value)}
+                onValueChange={(value) => updatePreferences({ theme: value as 'light' | 'dark' | 'system' })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -93,7 +85,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Label htmlFor="documentView">Document View</Label>
               <Select
                 value={preferences.documentView}
-                onValueChange={(value) => handlePreferenceChange('documentView', value)}
+                onValueChange={(value) => updatePreferences({ documentView: value as 'compact' | 'comfortable' | 'spacious' })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -120,7 +112,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Label htmlFor="language">Language</Label>
               <Select
                 value={preferences.language}
-                onValueChange={(value) => handlePreferenceChange('language', value)}
+                onValueChange={(value) => updatePreferences({ language: value })}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -149,7 +141,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="email-notifications"
                 checked={preferences.notifications.email}
-                onCheckedChange={(value) => handlePreferenceChange('notifications.email', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('notifications', 'email', value)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -157,7 +149,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="push-notifications"
                 checked={preferences.notifications.push}
-                onCheckedChange={(value) => handlePreferenceChange('notifications.push', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('notifications', 'push', value)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -165,7 +157,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="in-app-notifications"
                 checked={preferences.notifications.inApp}
-                onCheckedChange={(value) => handlePreferenceChange('notifications.inApp', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('notifications', 'inApp', value)}
               />
             </div>
           </CardContent>
@@ -184,7 +176,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="analytics"
                 checked={preferences.privacy.analytics}
-                onCheckedChange={(value) => handlePreferenceChange('privacy.analytics', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('privacy', 'analytics', value)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -192,7 +184,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="crash-reports"
                 checked={preferences.privacy.crashReports}
-                onCheckedChange={(value) => handlePreferenceChange('privacy.crashReports', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('privacy', 'crashReports', value)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -200,7 +192,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="auto-save"
                 checked={preferences.autoSave}
-                onCheckedChange={(value) => handlePreferenceChange('autoSave', value)}
+                onCheckedChange={(value) => updatePreferences({ autoSave: value })}
               />
             </div>
           </CardContent>
@@ -219,7 +211,7 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="high-contrast"
                 checked={preferences.accessibility.highContrast}
-                onCheckedChange={(value) => handlePreferenceChange('accessibility.highContrast', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('accessibility', 'highContrast', value)}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -227,14 +219,14 @@ export const UserPreferencesPanel: React.FC = () => {
               <Switch
                 id="reduced-motion"
                 checked={preferences.accessibility.reducedMotion}
-                onCheckedChange={(value) => handlePreferenceChange('accessibility.reducedMotion', value)}
+                onCheckedChange={(value) => handleNestedPreferenceChange('accessibility', 'reducedMotion', value)}
               />
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="font-size">Font Size</Label>
               <Select
                 value={preferences.accessibility.fontSize}
-                onValueChange={(value) => handlePreferenceChange('accessibility.fontSize', value)}
+                onValueChange={(value) => handleNestedPreferenceChange('accessibility', 'fontSize', value)}
               >
                 <SelectTrigger className="w-24">
                   <SelectValue />

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Download, FileText, Table, File, BarChart3, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Keyword, DocumentData } from '@/pages/Index';
+import { Keyword, DocumentData } from '@/types';
 import { 
   generatePDFReport, 
   generateWordDocument, 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import { DocumentComparison as DocumentComparisonType } from '../types/document-analysis';
 import {
@@ -15,6 +16,14 @@ import {
 } from './ui/accordion';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
+=======
+
+import React, { useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { FileText, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { DocumentData, Keyword } from '@/types';
+import { Card } from '@/components/ui/card';
+>>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 
 interface DocumentComparisonProps {
   comparison: DocumentComparisonType;

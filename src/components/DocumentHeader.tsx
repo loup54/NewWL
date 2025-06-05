@@ -2,7 +2,7 @@
 import React from 'react';
 import { FileText, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DocumentData } from '@/pages/Index';
+import { DocumentData } from '@/types';
 import { getFileType } from '@/utils/fileTypeUtils';
 import { DocumentStats } from './DocumentStats';
 

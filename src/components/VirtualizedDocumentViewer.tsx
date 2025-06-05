@@ -1,6 +1,6 @@
 
 import React, { useCallback } from 'react';
-import { DocumentData, Keyword } from '@/pages/Index';
+import { DocumentData, Keyword } from '@/types';
 import { SearchControls } from './SearchControls';
 import { DocumentHeader } from './DocumentHeader';
 import { VirtualizedList } from './VirtualizedList';

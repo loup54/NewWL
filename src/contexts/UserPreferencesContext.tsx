@@ -1,12 +1,9 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export interface UserPreferences {
+interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
-  language: 'en' | 'es' | 'fr' | 'de';
-  documentView: 'compact' | 'comfortable' | 'spacious';
-  autoSave: boolean;
+  language: string;
   notifications: {
     email: boolean;
     push: boolean;
@@ -21,13 +18,20 @@ export interface UserPreferences {
     reducedMotion: boolean;
     fontSize: 'small' | 'medium' | 'large';
   };
+  documentView: 'compact' | 'comfortable' | 'spacious';
+  autoSave: boolean;
+}
+
+interface UserPreferencesContextType {
+  preferences: UserPreferences;
+  updatePreferences: (updates: Partial<UserPreferences>) => void;
+  resetPreferences: () => void;
+  isLoading: boolean;
 }
 
 const defaultPreferences: UserPreferences = {
   theme: 'system',
   language: 'en',
-  documentView: 'comfortable',
-  autoSave: true,
   notifications: {
     email: true,
     push: false,
@@ -42,63 +46,49 @@ const defaultPreferences: UserPreferences = {
     reducedMotion: false,
     fontSize: 'medium',
   },
+  documentView: 'comfortable',
+  autoSave: true,
 };
-
-interface UserPreferencesContextType {
-  preferences: UserPreferences;
-  updatePreferences: (updates: Partial<UserPreferences>) => void;
-  resetPreferences: () => void;
-  isLoading: boolean;
-}
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined);
 
-export const UserPreferencesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+export const UserPreferencesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load preferences from localStorage on mount
   useEffect(() => {
-    const loadPreferences = () => {
-      setIsLoading(true);
-      try {
-        const storageKey = user?.id ? `user-preferences-${user.id}` : 'user-preferences-guest';
-        const stored = localStorage.getItem(storageKey);
-        
-        if (stored) {
-          const parsedPreferences = JSON.parse(stored);
-          setPreferences({ ...defaultPreferences, ...parsedPreferences });
-        } else {
-          setPreferences(defaultPreferences);
-        }
-      } catch (error) {
-        console.error('Failed to load user preferences:', error);
-        setPreferences(defaultPreferences);
-      } finally {
-        setIsLoading(false);
+    try {
+      const savedPreferences = localStorage.getItem('userPreferences');
+      if (savedPreferences) {
+        const parsed = JSON.parse(savedPreferences);
+        setPreferences({ ...defaultPreferences, ...parsed });
       }
-    };
-
-    loadPreferences();
-  }, [user]);
+    } catch (error) {
+      console.error('Failed to load user preferences:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const updatePreferences = (updates: Partial<UserPreferences>) => {
-    const newPreferences = { ...preferences, ...updates };
-    setPreferences(newPreferences);
-
-    try {
-      const storageKey = user?.id ? `user-preferences-${user.id}` : 'user-preferences-guest';
-      localStorage.setItem(storageKey, JSON.stringify(newPreferences));
-    } catch (error) {
-      console.error('Failed to save user preferences:', error);
-    }
+    setPreferences(prev => {
+      const newPreferences = { ...prev, ...updates };
+      
+      try {
+        localStorage.setItem('userPreferences', JSON.stringify(newPreferences));
+      } catch (error) {
+        console.error('Failed to save user preferences:', error);
+      }
+      
+      return newPreferences;
+    });
   };
 
   const resetPreferences = () => {
     setPreferences(defaultPreferences);
     try {
-      const storageKey = user?.id ? `user-preferences-${user.id}` : 'user-preferences-guest';
-      localStorage.removeItem(storageKey);
+      localStorage.removeItem('userPreferences');
     } catch (error) {
       console.error('Failed to reset user preferences:', error);
     }

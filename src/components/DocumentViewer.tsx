@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { Keyword, DocumentData } from '@/pages/Index';
+import { Keyword, DocumentData } from '@/types';
 import { getDocumentStats } from '@/utils/fileTypeUtils';
 import { cleanRTFContent } from '@/utils/contentProcessor';
 import { DocumentHeader } from './DocumentHeader';

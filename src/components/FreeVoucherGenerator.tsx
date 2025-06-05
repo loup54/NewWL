@@ -5,8 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy, Gift, RefreshCw, Shield, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+<<<<<<< HEAD
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+=======
+import { supabase } from '@/integrations/supabase/client';
+>>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logSecurityEvent } from '@/utils/securityMonitor';
 import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';
@@ -18,8 +22,10 @@ export const FreeVoucherGenerator: React.FC = () => {
   const [voucherValue, setVoucherValue] = useState<number>(2.00);
   const [isGenerating, setIsGenerating] = useState(false);
   const [rateLimitInfo, setRateLimitInfo] = useState<{ remaining?: number; resetTime?: number }>({});
-  const { user } = useAuth();
   const { handleError } = useErrorHandler();
+
+  // Temporarily disable auth requirement - this will be added back in later phases
+  const user = null;
 
   const validateInputs = (): boolean => {
     const validator = new InputValidator([
@@ -53,7 +59,7 @@ export const FreeVoucherGenerator: React.FC = () => {
       logSecurityEvent.voucherGeneration('anonymous', codeCount, false);
       toast({
         title: "Login Required",
-        description: "Please sign in to generate voucher codes",
+        description: "Please sign in to generate voucher codes (Auth temporarily disabled)",
         variant: "destructive"
       });
       return;

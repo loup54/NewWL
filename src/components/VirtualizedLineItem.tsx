@@ -1,6 +1,6 @@
 
 import React, { useCallback } from 'react';
-import { Keyword } from '@/pages/Index';
+import { Keyword } from '@/types';
 
 interface LineItemProps {
   index: number;

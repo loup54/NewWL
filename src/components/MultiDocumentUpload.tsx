@@ -1,9 +1,10 @@
+
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { DocumentData } from '@/pages/Index';
+import { DocumentData } from '@/types';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 interface MultiDocumentUploadProps {

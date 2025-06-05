@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { offlineStorage, StoredDocument } from '@/utils/offlineStorage';
-import { DocumentData } from '@/pages/Index';
+import { DocumentData } from '@/types';
 import { toast } from 'sonner';
 
 export const useOfflineDocuments = () => {
