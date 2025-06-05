@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Menu, X, Shield } from 'lucide-react';
+import { FileText, Menu, X, Shield, Search, BarChart2, Settings } from 'lucide-react';
 import { AuthModal } from '@/components/AuthModal';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +14,16 @@ export const Header: React.FC = () => {
   const { isAdmin } = useUserRoles();
   const location = useLocation();
 
+  const isActive = (path: string) => location.pathname === path;
+
+  const navItems = [
+    { path: '/', label: 'Home', icon: FileText },
+    { path: '/analyze', label: 'Analyze', icon: FileText },
+    { path: '/compare', label: 'Compare', icon: BarChart2 },
+    { path: '/validation', label: 'Validation', icon: FileText },
+    { path: '/settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
     <>
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -26,40 +35,21 @@ export const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-4">
-              <Link
-                to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Home
-              </Link>
-              <Link
-                to="/validation"
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/validation' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                Validation
-              </Link>
-              {isAdmin && (
+            <nav className="hidden md:flex items-center space-x-8">
+              {navItems.map(({ path, label, icon: Icon }) => (
                 <Link
-                  to="/admin"
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-                    location.pathname === '/admin' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  key={path}
+                  to={path}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive(path)
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                   }`}
                 >
-                  <Shield className="w-4 h-4" />
-                  Admin
+                  <Icon className="w-5 h-5" />
+                  <span>{label}</span>
                 </Link>
-              )}
+              ))}
             </nav>
 
             {/* User Menu / Auth Button */}
@@ -88,42 +78,21 @@ export const Header: React.FC = () => {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link
-                  to="/"
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    location.pathname === '/' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link
-                  to="/validation"
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                    location.pathname === '/validation' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Validation
-                </Link>
-                {isAdmin && (
+                {navItems.map(({ path, label, icon: Icon }) => (
                   <Link
-                    to="/admin"
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-1 ${
-                      location.pathname === '/admin' 
-                        ? 'bg-blue-100 text-blue-700' 
+                    key={path}
+                    to={path}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                      isActive(path)
+                        ? 'bg-blue-100 text-blue-700'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <Shield className="w-4 h-4" />
-                    Admin
+                    <Icon className="w-4 h-4" />
+                    <span>{label}</span>
                   </Link>
-                )}
+                ))}
               </div>
             </div>
           )}

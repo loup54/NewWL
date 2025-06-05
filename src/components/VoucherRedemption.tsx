@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Gift, CheckCircle, AlertCircle, RefreshCw, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logSecurityEvent } from '@/utils/securityMonitor';
 import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';

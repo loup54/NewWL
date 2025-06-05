@@ -1,8 +1,7 @@
-
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">WordLens Insight Engine</string>
-    <string name="title_activity_main">WordLens</string>
-    <string name="package_name">app.lovable.83239b5384804243b2ddd190bf041317</string>
-    <string name="custom_url_scheme">app.lovable.83239b5384804243b2ddd190bf041317</string>
+    <string name="title_activity_main">WordLens Insight Engine</string>
+    <string name="package_name">app.lovable.wordlens</string>
+    <string name="custom_url_scheme">app.lovable.wordlens</string>
 </resources>
