@@ -5,12 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Copy, Gift, RefreshCw, Shield, AlertTriangle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-<<<<<<< HEAD
 import { supabase } from '@/lib/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-=======
-import { supabase } from '@/integrations/supabase/client';
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { logSecurityEvent } from '@/utils/securityMonitor';
 import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';

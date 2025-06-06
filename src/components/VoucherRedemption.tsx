@@ -5,21 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Gift, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-<<<<<<< HEAD
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase/client';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { logSecurityEvent } from '@/utils/securityMonitor';
-import { InputValidator, commonValidations, sanitizeInput } from '@/utils/inputValidation';
-import { rateLimiters } from '@/utils/rateLimiter';
 
 interface RedemptionResponse {
   success: boolean;
   value?: number;
   error?: string;
 }
-=======
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 
 export const VoucherRedemption: React.FC = () => {
   const [voucherCode, setVoucherCode] = useState('');

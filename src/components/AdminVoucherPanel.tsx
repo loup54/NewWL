@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,12 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Gift, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-<<<<<<< HEAD
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-=======
-import { supabase } from '@/integrations/supabase/client';
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 
 type VoucherStatus = 'active' | 'used' | 'expired';
 

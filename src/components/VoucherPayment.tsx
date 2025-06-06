@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-<<<<<<< HEAD
-import { CreditCard, Gift, Loader2, AlertCircle, LogIn, Shield } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-=======
 import { Gift, AlertCircle, Shield } from 'lucide-react';
->>>>>>> 78b4fbc6a05d82465a5c297dd289cc2a68d61a59
 import { toast } from '@/hooks/use-toast';
 
 export const VoucherPayment: React.FC = () => {
