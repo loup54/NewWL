@@ -20,7 +20,7 @@ const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 function App() {
   console.log('App: Loading WordLens with full access - no authentication barriers');
-  
+
   return (
     <ErrorBoundary>
       <UserPreferencesProvider>
