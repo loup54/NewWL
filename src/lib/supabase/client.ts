@@ -11,6 +11,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+import.meta.env.VITE_SUPABASE_URL,
+import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Helper function to check if Supabase is properly configured
 export const isSupabaseConfigured = () => {
