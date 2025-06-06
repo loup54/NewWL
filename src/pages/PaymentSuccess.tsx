@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,6 @@ const PaymentSuccess = () => {
   const handleDownloadVoucher = () => {
     const voucherData = `
 WordLens Premium Voucher - SECURE
-=================================
 Voucher Code: ${voucherCode}
 Value: $2.00 USD
 Valid for: Premium Features Access
